@@ -137,7 +137,7 @@ vasp.keep_steps = True
 
 matLatPairs = []
 
-for fname in iglob("icsd_structures/*.cif"):
+for fname in iglob("structs/*.cif"):
   material = fname[fname.index('/')+1:-4]
   lattice = icsd_cif( fname)
   if bugLev >= 1:

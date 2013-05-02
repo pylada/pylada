@@ -16,6 +16,7 @@ def launch(self, event, jobfolders):
   from ...misc import Changedir
   from ... import pbs_string, default_pbs, qsub_exe, default_comm
   from . import get_walltime, get_mppalloc, get_queues, scattered_script
+  from pylada.misc import bugLev
 
   shell = get_shell(self)
 
@@ -31,6 +32,7 @@ def launch(self, event, jobfolders):
 
   # gets python script to launch in pbs.
   pyscript = scattered_script.__file__
+  if bugLev >= 1: print "launch/scattered: pyscript: %s" % (pyscript,)
   if pyscript[-1] == 'c': pyscript = pyscript[:-1]
 
   # creates file names.
@@ -43,11 +45,15 @@ def launch(self, event, jobfolders):
   # now  loop over jobfolders
   pbsscripts = []
   for current, path in jobfolders:
+    if bugLev >= 1: print "launch/scattered: current: %s  path: %s" \
+      % (current, path,)
     # creates directory.
     directory = dirname(path)
     with Changedir(directory) as pwd: pass
     # loop over executable folders in current jobfolder
     for name, job in current.root.iteritems():
+      if bugLev >= 1: print "launch/scattered: name: %s  job: %s  tagged: %s" \
+        % (name, job, job.is_tagged,)
       # avoid jobfolder which are off
       if job.is_tagged: continue
       # avoid successful jobs.unless specifically requested
