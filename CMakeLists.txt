@@ -97,17 +97,12 @@ endif(NOT CMAKE_PYINSTALL_PREFIX)
 
 # required packages
 #   -- boost packages
-#if("${BOOST_ROOT}" STREQUAL "")
-#  if ("$ENV{BOOST_ROOT}" STRGREATER "")
-#    set(BOOST_ROOT $ENV{BOOST_ROOT} CACHE PATH "Path to boost libraries and headers.")
-#  endif ("$ENV{BOOST_ROOT}" STRGREATER "")
-#endif("${BOOST_ROOT}" STREQUAL "")
-#set(boost_packages python)
-#if(ewald_functional)
-#  set(boost_packages ${boost_packages} math_c99 math_c99l math_c99f )
-#endif(ewald_functional)
-#find_package(Boost 1.36.0 REQUIRED  COMPONENTS ${boost_packages})
-#include_directories(${Boost_INCLUDE_DIRS})
+if(ewald_functional)
+  find_package(Boost 1.36.0 REQUIRED COMPONENTS math_c99 math_c99l math_c99f )
+else(ewald_functional)
+  find_package(Boost 1.36.0 REQUIRED)
+endif(ewald_functional)
+include_directories(${Boost_INCLUDE_DIRS})
 #   -- eigen2
 find_package( eigen REQUIRED )
 include_directories(${eigen_INCLUDE_DIR})

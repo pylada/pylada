@@ -57,11 +57,9 @@ template<class T>
   }
 
 //! Column 0 to have only one non-zero positive component placed at origin.
-template<class T0, class T1, class T2, class T3>
-  void smith_col_impl( Eigen::MatrixBase<T0> const &_out, 
-                       Eigen::MatrixBase<T1> &_left,
+template<class T1, class T2>
+  void smith_col_impl( Eigen::MatrixBase<T1> &_left,
                        Eigen::MatrixBase<T2> &_smith, 
-                       Eigen::MatrixBase<T3> &_right, 
                        size_t _index )
   {
     while(not one_nonzero(_smith.col(_index)))
@@ -91,10 +89,8 @@ template<class T0, class T1, class T2, class T3>
   }
 
 //! Row 0 to have one only non-zero and positive component placed at origin.
-template<class T0, class T1, class T2, class T3>
-  void smith_row_impl( Eigen::MatrixBase<T0> const &_out, 
-                       Eigen::MatrixBase<T1> &_left,
-                       Eigen::MatrixBase<T2> &_smith,
+template<class T2, class T3>
+  void smith_row_impl( Eigen::MatrixBase<T2> &_smith,
                        Eigen::MatrixBase<T3> &_right,
                        size_t _index )
   {
@@ -102,7 +98,7 @@ template<class T0, class T1, class T2, class T3>
     {
       // find min/max elements.
       types::t_int maxelem, minelem;
-      get_min_max(_smith.row(_index).transpose(), maxelem, minelem); 
+      get_min_max(_smith.row(_index), maxelem, minelem); 
       check_same_magnitude(_smith.transpose(), maxelem, minelem, _index);
       // Remove multiple from column.
       types::t_int const multiple = _smith(_index, maxelem) / _smith(_index, minelem);
@@ -126,20 +122,16 @@ template<class T0, class T1, class T2, class T3>
 
 
 //! Makes matrix diagonal. Does not order diagonal values correctly yet.
-template<class T0, class T1, class T2, class T3>
-  void smith_impl_( Eigen::MatrixBase<T0> const &_out, 
-                    Eigen::MatrixBase<T1> &_left,
+template<class T1, class T2, class T3>
+  void smith_impl_( Eigen::MatrixBase<T1> &_left,
                     Eigen::MatrixBase<T2> &_right,
                     Eigen::MatrixBase<T3> &_smith )
   {
-    int const nrows = _smith.rows();
-    int const ncols = _smith.cols();
-    Eigen::Matrix<typename Eigen::MatrixBase<T0>::Scalar, Eigen::Dynamic, Eigen::Dynamic> old(nrows, ncols);
     for(int index(0); index < _smith.rows()-1; ++index)
       do
       {
-        smith_col_impl(_out, _left, _smith, _right, index);
-        smith_row_impl(_out, _left, _smith, _right, index);
+        smith_col_impl(_left, _smith, index);
+        smith_row_impl(_smith, _right, index);
 
         int maxrow = _smith.rows();
         types::t_int const diag = _smith(index, index);
@@ -173,5 +165,5 @@ void smith_normal_form( iMatrix3d& _S, iMatrix3d & _L,
   _L  = iMatrix3d::Identity();
   _R = iMatrix3d::Identity();
   _S = _M;
-  smith_impl_(_M, _L, _R, _S);
+  smith_impl_(_L, _R, _S);
 }
