@@ -98,9 +98,9 @@ endif(NOT CMAKE_PYINSTALL_PREFIX)
 # required packages
 #   -- boost packages
 if(ewald_functional)
-  find_package(Boost 1.36.0 REQUIRED COMPONENTS math_c99 math_c99l math_c99f )
+  find_package(Boost 1.33.0 REQUIRED COMPONENTS math_c99 math_c99l math_c99f )
 else(ewald_functional)
-  find_package(Boost 1.36.0 REQUIRED)
+  find_package(Boost 1.33.0 REQUIRED)
 endif(ewald_functional)
 include_directories(${Boost_INCLUDE_DIRS})
 #   -- eigen2
