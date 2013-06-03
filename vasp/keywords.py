@@ -981,7 +981,6 @@ class Relaxation(BaseKeyword):
              6: 'cellshape volume',
              7: 'volume' }[instance.isif]
   def __set__(self, instance, value):
-    #print "vasp/keywords: set: instance: ", instance, "  value: ", value
     from ..error import ValueError
     if value is None: value = 'static'
     if hasattr(value, '__iter__'): value = ' '.join([str(u) for u in value])
@@ -993,7 +992,6 @@ class Relaxation(BaseKeyword):
                 4: 'cellshape ionic', 5: 'cellshape', 6: 'cellshape volume',
                 7: 'volume' }[dummy]
     value = set(value.lower().replace(',', ' ').rstrip().lstrip().split())
-    #print "vasp/keywords: set: value b: ", value
     result = []
     if 'all' in value: result = 'ionic cellshape volume'.split()
     else:
@@ -1003,7 +1001,6 @@ class Relaxation(BaseKeyword):
         result.append('cellshape')
       if 'volume' in value: result.append('volume')
     result = ', '.join(result)
-    #print "vasp/keywords: set: result: ", result
 
     # static case
     if len(result) == 0:
@@ -1016,12 +1013,9 @@ class Relaxation(BaseKeyword):
     # non-static
     if instance.nsw is None or instance.nsw <= 0: instance.nsw = 50
     if instance.ibrion is None or instance.ibrion == -1: instance.ibrion = 2
-    ionic = 'ionic' in value
-    cellshape = 'cellshape' in value
-    volume = 'volume' in value
-    #print "vasp/keywords: set: ionic: ", ionic
-    #print "vasp/keywords: set: cellshape: ", cellshape
-    #print "vasp/keywords: set: volume: ", volume
+    ionic = 'ionic' in result
+    cellshape = 'cellshape' in result
+    volume = 'volume' in result
 
     if ionic and (not cellshape) and (not volume):   instance.isif = 2
     elif ionic and cellshape and (not volume):       instance.isif = 4
@@ -1033,12 +1027,8 @@ class Relaxation(BaseKeyword):
       raise ValueError( "VASP does not allow relaxation of atomic position "   \
                         "and volume at constant cell-shape.\n" )
     else: instance.isif = 2
-    #print "vasp/keywords: set: instance.isif: ", instance.isif
 
-  def output_map(self, **kwargs):
-    #print "vasp/keywords: Relaxation.output: keyword: %s  value: %s" \
-    #  % (self.keyword, self.value,)
-    return None
+  def output_map(self, **kwargs): return None
 
 class ISmear(AliasKeyword):
   keyword = 'ismear'

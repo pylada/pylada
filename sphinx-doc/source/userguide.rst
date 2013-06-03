@@ -11,6 +11,8 @@ Contents:
 
    Setting up Pylada <userguide/configuration>
 
+   Testing <userguide/testing>
+
    Creating and Manipulating crystal structures <userguide/crystal>
 
    Interface to VASP  <userguide/vasp>

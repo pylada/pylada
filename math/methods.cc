@@ -6,7 +6,7 @@ PyObject* pyis_integer(PyObject *_module, PyObject* _in)
     PYLADA_PYERROR(TypeError, "Argument should be a numpy array.");
     return NULL;
   }
-  int const type = PyArray_TYPE(_in);
+  int const type = PyArray_TYPE((PyArrayObject*)_in);
 # ifdef  PYLADA_NPYITER
 #   error PYLADA_NPYITER already defined
 # endif
@@ -50,8 +50,8 @@ PyObject* pyfloor_int(PyObject *_module, PyObject* _in)
     PYLADA_PYERROR(TypeError, "Argument should be a numpy array.");
     return NULL;
   }
-  python::Object result = PyArray_SimpleNew( PyArray_NDIM(_in),
-                                             PyArray_DIMS(_in), 
+  python::Object result = PyArray_SimpleNew( PyArray_NDIM((PyArrayObject*)_in),
+                                             PyArray_DIMS((PyArrayObject*)_in), 
                                              NPY_LONG );
   if(not result) return NULL;
   python::Object iter_in = PyArray_IterNew(_in);
@@ -61,7 +61,7 @@ PyObject* pyfloor_int(PyObject *_module, PyObject* _in)
   PyObject* py_iterin = iter_in.borrowed();
   PyObject* py_iterout = iter_out.borrowed();
 
-  int const type = PyArray_TYPE(_in);
+  int const type = PyArray_TYPE((PyArrayObject*)_in);
 # ifdef  PYLADA_NPYITER
 #   error PYLADA_NPYITER already defined
 # endif
@@ -128,9 +128,9 @@ PyObject* Rotation1( PyObject *_module,
   a = AngleAxis(angle, vector);
   for(size_t i(0); i < 3; ++i)
     for(size_t j(0); j < 3; ++j)
-      *((types::t_real*)(result->data + i*result->strides[0] + j*result->strides[1])) = a(i, j);
+      *((types::t_real*)PyArray_GETPTR2(result, i, j)) = a(i, j);
   for(size_t j(0); j < 3; ++j)
-    *((types::t_real*)(result->data + 3*result->strides[0] + j*result->strides[1])) = 0;
+    *((types::t_real*)PyArray_GETPTR2(result, 3, j)) = 0;
   return (PyObject*)result;
 }
 PyObject *translation(PyObject *_module, PyObject *_args)
@@ -152,9 +152,9 @@ PyObject *translation(PyObject *_module, PyObject *_args)
   if(not python::numpy::convert_to_vector(_args, trans)) return NULL;
   for(size_t i(0); i < 3; ++i)
     for(size_t j(0); j < 3; ++j)
-      *((types::t_real*)(result->data + i*result->strides[0] + j*result->strides[1])) = i == j? 1: 0;
+      *((types::t_real*)PyArray_GETPTR2(result, i, j)) = i == j? 1: 0;
   for(size_t j(0); j < 3; ++j)
-    *((types::t_real*)(result->data + 3*result->strides[0] + j*result->strides[1])) = trans(j);
+    *((types::t_real*)PyArray_GETPTR2(result, 3, j)) = trans(j);
   return (PyObject*)result;
 }
 

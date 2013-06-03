@@ -2,8 +2,8 @@
 __docformat__ = "restructuredtext en"
 __all__ = [ 'stateless', 'assign_attributes', 'check_success',
             'check_success_generator', 'make_cached', 'uncache', 'SuperCall',
-            'create_directory', 'prep_symlink', 'add_ladarunning_marker',
-            'remove_ladarunning_marker', 'remove_workdir_link',
+            'create_directory', 'prep_symlink', 'add_pyladarunning_marker',
+            'remove_pyladarunning_marker', 'remove_workdir_link',
             'add_section_to_file', 'get_section_from_file', 'OnFinish' ]
 def stateless(function):
   """ Decorator to make a function stateless.
@@ -187,16 +187,16 @@ def remove_workdir_link(outdir):
     try: remove(path)
     except OSError: pass
 
-def add_ladarunning_marker(outdir): 
+def add_pyladarunning_marker(outdir): 
   """ Creates a marker file in output directory. """
   from os.path import join
-  file = open(join(outdir, '.lada_is_running'), 'w')
+  file = open(join(outdir, '.pylada_is_running'), 'w')
   file.close()
-def remove_ladarunning_marker(outdir): 
+def remove_pyladarunning_marker(outdir): 
   """ Creates a marker file in output directory. """
   from os.path import exists, join
   from os import remove
-  path = join(outdir, '.lada_is_running')
+  path = join(outdir, '.pylada_is_running')
   if exists(path): 
     try: remove(path)
     except OSError: pass

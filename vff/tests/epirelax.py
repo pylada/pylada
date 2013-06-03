@@ -76,6 +76,8 @@ def test_relaxepi(direction, cartesian=True, scale=5.45):
     if directory != '/tmp/test/': rmtree(directory)
 
 if __name__ == '__main__':
-  test_relaxepi([0, 0, 1], True, 5.35)
-  test_relaxepi([0, 1, 1], True, 5.35)
-  test_relaxepi([1, 1, 1], True, 5.35)
+  import scipy
+  if tuple(int(u) for u in scipy.__version__.split('.')) >= (0, 11, 0):
+    test_relaxepi([0, 0, 1], True, 5.35)
+    test_relaxepi([0, 1, 1], True, 5.35)
+    test_relaxepi([1, 1, 1], True, 5.35)

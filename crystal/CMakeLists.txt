@@ -6,8 +6,10 @@ include_directories(${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDES})
 add_library (pycrystal SHARED module.cc)
 set_target_properties(pycrystal PROPERTIES OUTPUT_NAME cppwrappers)
 set_target_properties(pycrystal PROPERTIES PREFIX "")
+set_target_properties(pycrystal PROPERTIES SUFFIX ".so")
 install(TARGETS pycrystal DESTINATION ${CMAKE_PYINSTALL_PREFIX}/pylada/crystal)
 install(FILES ${LIBCRYSTAL_PYSOURCES} DESTINATION ${CMAKE_PYINSTALL_PREFIX}/pylada/crystal)
+target_link_libraries(pycrystal ${PYTHON_LIBRARIES})
 
 set(PYCRYSTAL_SOURCES atom/pybase.cc atom/cdi.cc atom/members.cc atom/getset.cc
                       structure/pybase.cc structure/cdi.cc structure/members.cc
@@ -30,6 +32,4 @@ if(NOT noinstall_headers)
   install(FILES ${PYCRYSTAL_HEADERS} DESTINATION include/Pylada/crystal)
 endif(NOT noinstall_headers)
 
-if(compile_tests OR compile_debug_tests)
-  add_subdirectory(tests)
-endif(compile_tests OR compile_debug_tests)
+add_subdirectory(tests)

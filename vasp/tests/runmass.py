@@ -27,7 +27,7 @@ def test(path):
   emass = EMass(copy=vasp)
   assert abs(emass.encut - 1.4) < 1e-8
   assert abs(emass.ediff - 25e-5) < 1e-10
-  directory = mkdtemp()
+  directory = "/tmp/test" #mkdtemp()
   if exists(directory) and directory == '/tmp/test': rmtree(directory)
   if not exists(directory): makedirs(directory)
   try: 

@@ -1,4 +1,6 @@
 def test(path):
+  from os import makedirs
+  from os.path import exists
   from shutil import rmtree
   from tempfile import mkdtemp
   from pylada.crystal import Structure
@@ -18,13 +20,16 @@ def test(path):
   vasp.sigma      = 0.01
   vasp.relaxation = "volume"
   vasp.add_specie = "Si", "{0}/pseudos/Si".format(path)
-  directory = '/tmp/test' # mkdtemp()
+  directory = mkdtemp()
+  if directory == '/tmp/test' or directory == '/tmp/test/':
+    if exists(directory): rmtree(directory)
+    makedirs(directory)
   try: 
     result = vasp(structure, outdir=directory, comm=default_comm)
     assert result.success
   finally: 
-    # rmtree(directory)
-    pass
+    if directory != '/tmp/test' and directory != '/tmp/test/':
+      rmtree(directory)
 
 if __name__ == "__main__":
   from sys import argv

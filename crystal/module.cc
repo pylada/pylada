@@ -1,7 +1,7 @@
 #include "PyladaConfig.h"
 
 #include <Python.h>
-#include <numpy/arrayobject.h>
+#include <python/include_numpy.h>
 
 #include <cmath>
 #include <iterator> 

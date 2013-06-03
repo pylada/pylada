@@ -930,9 +930,10 @@ class Vasp(AttrBlock):
     # creates a process with a callback to bring-down environment once it is
     # done.
     def onfinish(process, error):  self.bringdown(outdir, structure)
+    onfail   = self.OnFail(Vasp.Extract(outdir))
     yield ProgramProcess( program, cmdline=[], outdir=outdir,
-                          onfinish=onfinish, stdout='stdout', stderr='stderr',
-                          dompi=comm is not None )
+			  onfinish=onfinish, onfail=onfail, stdout='stdout',
+			  stderr='stderr', dompi=comm is not None )
     # yields final extraction object.
     yield ExtractVasp(outdir)
 
@@ -1105,6 +1106,22 @@ class Vasp(AttrBlock):
     for key, value in self.__class__().__dict__.iteritems():
        if not hasattr(self, key): setattr(self, key, value)
 
+  class OnFail(object):
+    """ Checks whether VASP run succeeded.
+
+	Who knows what could happen and make VASP return an error. As long as
+        the OUTCAR is OK, everything should be OK.
+    """
+    def __init__(self, extract):
+      self.extract = extract
+    def __call__(self, process, error):
+      from ..process import Fail
+      self.extract.uncache()
+      try: success = self.extract.success
+      except: success = False
+      if not success:
+        raise Fail( 'VASP failed to run correctly.\n'                       \
+                    'It returned with error {0}.'.format(error) )
 
 del stateless
 del assign_attributes

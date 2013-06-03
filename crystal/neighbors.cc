@@ -11,7 +11,7 @@ bool insert_neighbor_impl_( python::Object const &_list,
   if(not pypos) {Py_DECREF(pydist); return false; }
   PyObject *tuple = PyTuple_Pack(3, _ref.borrowed(), pypos, pydist);
   Py_DECREF(pypos); Py_DECREF(pydist);
-  if(not tuple) return NULL;
+  if(not tuple) return false;
   bool result = PyList_Insert(_list.borrowed(), _i, tuple) == 0;
   Py_DECREF(tuple);
   return result;
@@ -28,7 +28,7 @@ bool append_neighbor_impl_( python::Object const &_list,
   if(not pypos) {Py_DECREF(pydist); return false; }
   PyObject *tuple = PyTuple_Pack(3, _ref.borrowed(), pypos, pydist);
   Py_DECREF(pypos); Py_DECREF(pydist);
-  if(not tuple) return NULL;
+  if(not tuple) return false;
   bool result = PyList_Append(_list.borrowed(), tuple) == 0;
   Py_DECREF(tuple);
   return result;

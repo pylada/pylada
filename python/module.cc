@@ -2,7 +2,7 @@
 
 #include <Python.h>
 #include <structmember.h>
-#include <numpy/arrayobject.h>
+#include "include_numpy.h"
 
 #include <errors/exceptions.h>
 #include <math/math.h>

@@ -2,7 +2,7 @@
 
 #include <Python.h>
 #define PY_ARRAY_UNIQUE_SYMBOL pylada_ewald_ARRAY_API
-#include <numpy/arrayobject.h>
+#include <python/include_numpy.h>
 
 #include <algorithm>
 

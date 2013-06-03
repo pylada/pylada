@@ -87,8 +87,9 @@ def test_stress(epsilon = 1e-4):
 
     stress = (xplus - xminus) / epsilon * 0.5                                  \
              * -1e0 / det(structure.cell*structure.scale)*angstrom**(-3)
-    stress = float(stress)
-    assert abs(stress - out.stress[i, i]) < 1e2 * epsilon
+    iival = out.stress[i, i] 
+    if not hasattr(iival, 'magnitude'): iival *= out.stress.units 
+    assert abs(stress - iival) < 1e2 * epsilon
 
 
   ostrain = array([[1e0, 0.1, 0.2], [0.1, 1e0, -0.05], [0.2, -0.05, 1e0]])
@@ -120,9 +121,10 @@ def test_stress(epsilon = 1e-4):
 
       stress = (xplus - xminus) / epsilon * 0.5                                \
                * -1e0 / det(structure.cell*structure.scale)*angstrom**(-3)
-      stress = float(stress)
       assert abs(out.stress[i,j]-out.stress[j,i]) < 1e-8
-      assert abs(stress - out.stress[i, j]) < 1e2 * epsilon
+      ijval = out.stress[i, j] 
+      if not hasattr(ijval, 'magnitude'): ijval *= out.stress.units 
+      assert abs(stress - ijval) < 1e2 * epsilon
 
       
 if __name__ == '__main__':

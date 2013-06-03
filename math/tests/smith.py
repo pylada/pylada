@@ -7,7 +7,7 @@ def test_smith():
   
   for i in xrange(50):
     cell = randint(-5, 5, size=(3,3))
-    while det(cell) == 0: cell = randint(-5, 5, size=(3,3))
+    while abs(det(cell)) < 1e-2: cell = randint(-5, 5, size=(3,3))
     s, l, r = smith_normal_form(cell)
     assert all(dot(dot(l, cell), r) == s)
 

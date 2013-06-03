@@ -148,7 +148,7 @@ bool equivalent_crystals( Structure const &_a, Structure const &_b,
        symop.is_valid();
        symop.reset(PyIter_Next(iter_op.borrowed())) ) 
   {
-    types::t_real * const symop_data = (types::t_real*)((PyArrayObject*)symop.borrowed())->data;
+    types::t_real * const symop_data = (types::t_real*)PyArray_DATA((PyArrayObject*)symop.borrowed());
     Eigen::Map< Eigen::Matrix<types::t_real, 4, 3> > opmap(symop_data);
     // creates a vector referencing B atomic sites.
     // Items from this list will be removed as they are found.

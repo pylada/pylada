@@ -21,7 +21,7 @@ def test():
     jobfolder.params['indiv'] = size
     if type == 'that': jobfolder.params['value'] = True
 
-  directory =  mkdtemp() # '/tmp/test' #
+  directory =  '/tmp/test' # mkdtemp() # 
   if exists(directory) and directory == '/tmp/test': rmtree(directory)
   if not exists(directory): makedirs(directory)
   try: 
@@ -77,7 +77,10 @@ def test():
     self.magic("explore results".format(directory))
     assert set(['/this/0/', '/that/1/', '/that/2/']) == set(self.user_ns['collect'].iterkeys())
     self.magic("explore errors".format(directory))
-    assert set(['/this/1/']) == set(self.user_ns['collect'].iterkeys())
+    assert len(self.user_ns['collect']) == 0
+    self.magic("explore all".format(directory))
+    self.magic("explore errors".format(directory))
+    assert set(self.user_ns['collect'].keys()) == set(['/this/1/'])
     
   finally: 
     if directory != '/tmp/test': rmtree(directory)

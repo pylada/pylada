@@ -1,8 +1,8 @@
 def test():
   """ Tests writing out gulp files. """
   from numpy import array, all, abs
-  from lada.dftcrystal import Crystal
-  from lada.crystal.write import gulp
+  from pylada.dftcrystal import Crystal
+  from pylada.crystal.write import gulp
 
   a = Crystal(136, 4.63909875, 2.97938395, \
               ifhr=0, \
@@ -17,7 +17,7 @@ def test():
   assert all(abs(array(string[3].split(), dtype='float64') - [0, 0, 2.97938395]) < 1e-5) 
   assert string[4] == 'spacegroup'
   assert string[5] == '136'
-  assert string[6] == 'cartesian'
+  assert string[6].rstrip().lstrip() == 'cartesian'
   assert string[7].split()[:2] == ['Ti', 'core']
   assert all(abs(array(string[7].split()[2:], dtype='float64')) < 1e-5)
   assert string[8].split()[:2] == ['O', 'core']

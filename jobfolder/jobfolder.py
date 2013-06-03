@@ -234,8 +234,6 @@ class JobFolder(object):
 
         >>> return self.functional(**self.params.copy().update(kwargs))
     """  
-    print "    jobfolder.compute: is_executable: ", self.is_executable
-    print "    jobfolder.compute: functional: ", self.functional
     if not self.is_executable: return None
     params = self.params.copy()
     params.update(kwargs)

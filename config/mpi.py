@@ -130,7 +130,6 @@ def launch_program( cmdl, comm=None, formatter=None, env=None,
   if bugLev >= 5:
     print "config/mpi: launch_program: mach mod formatter: %s" % (formatter,)
 
-  formatter["placement"] = "numa_wrapper -ppn=8"
   if bugLev >= 5:
     print "config/mpi: launch_program: plac formatter: %s" % (formatter,)
 

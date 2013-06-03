@@ -181,7 +181,8 @@ PyObject* dnc_boxes( const Structure &_structure,
                 or PyTuple_GET_ITEM(already_there, 0) != i_atom->borrowed()) continue;
       
             PyObject* npyvec = PyTuple_GET_ITEM(already_there, 1);
-            Eigen::Map< math::rVector3d > map( (math::rVector3d::Scalar*)PyArray_DATA(npyvec) );
+            Eigen::Map< math::rVector3d > map( (math::rVector3d::Scalar*)
+                                               PyArray_DATA((PyArrayObject*)npyvec) );
             if(math::eq(overlap_translation, map)) { found = true; break; }
           }
           if(not found)

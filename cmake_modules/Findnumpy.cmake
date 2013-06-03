@@ -271,10 +271,66 @@ if (NUMPY_INCLUDES AND NUMPY_LIBRARIES AND NOT NUMPY_HAS_BOOL) # only if numpy f
       message (STATUS "[NumPy] Testing bool = ${NUMPY_HAS_BOOL}")
     endif (NOT NUMPY_FIND_QUIETLY)
   else (NUMPY_BOOLTEST_FILE AND PYTHON_INCLUDE_DIRS)
-    message (STATUS "[NumPy] Long test -- Unable to locate test program!")
+    message (STATUS "[NumPy] Testing bool -- Unable to locate test program!")
   endif (NUMPY_BOOLTEST_FILE AND PYTHON_INCLUDE_DIRS)
   unset(NUMPY_BOOLTEST_FILE)
 endif (NUMPY_INCLUDES AND NUMPY_LIBRARIES AND NOT NUMPY_HAS_BOOL)
+
+
+# New style NPY_ARRAY_*
+if (NUMPY_INCLUDES AND NUMPY_LIBRARIES AND NOT LADA_NPY_NEWDEFS) # only if numpy found.
+  find_file(NUMPY_CARRAYTEST_FILE test_numpy_is_noarray.cc PATHS ${CMAKE_MODULE_PATH})
+  if (NOT NUMPY_CARRAYTEST_FILE)
+    message (FATAL "[NumPy] NUMPY_ARRAY_C_CONTIGUOUS test file not found!")
+  endif(NOT NUMPY_CARRAYTEST_FILE)
+  
+  if (NUMPY_CARRAYTEST_FILE AND PYTHON_INCLUDE_DIRS)
+    ## try to compile and run
+    try_compile (
+      LADA_NPY_NEWDEFS
+      ${CMAKE_BINARY_DIR}
+      ${NUMPY_CARRAYTEST_FILE}
+      COMPILE_DEFINITIONS -I${PYTHON_INCLUDE_DIRS}  -I${NUMPY_INCLUDES} 
+      CMAKE_FLAGS -DLINK_LIBRARIES:STRING=${PYTHON_LIBRARIES}
+      OUTPUT_VARIABLE LADA_NPY_NEWDEFS_COMPILE
+      )
+    ## display results
+    if (NOT NUMPY_FIND_QUIETLY)
+      message (STATUS "[NumPy] Testing NPY_ARRAY_C_CONTIGUOUS: ${LADA_NPY_NEWDEFS}")
+    endif (NOT NUMPY_FIND_QUIETLY)
+  else (NUMPY_CARRAYTEST_FILE AND PYTHON_INCLUDE_DIRS)
+    message (STATUS "[NumPy] Testing NPY_ARRAY_C_CONTIGUOUS -- Unable to locate test program!")
+  endif (NUMPY_CARRAYTEST_FILE AND PYTHON_INCLUDE_DIRS)
+  unset(NUMPY_CARRAYTEST_FILE)
+endif (NUMPY_INCLUDES AND NUMPY_LIBRARIES AND NOT LADA_NPY_NEWDEFS)
+
+# NPY_ARRAY_C_CONTIGUOUS
+if (NUMPY_INCLUDES AND NUMPY_LIBRARIES AND NOT LADA_NPY_HAS_ENABLEFLAGS) # only if numpy found.
+  find_file(NUMPY_ENABLETEST_FILE test_numpy_has_enableflags.cc PATHS ${CMAKE_MODULE_PATH})
+  if (NOT NUMPY_ENABLETEST_FILE)
+    message (FATAL "[NumPy] enableflags test file not found!")
+  endif(NOT NUMPY_ENABLETEST_FILE)
+  
+  if (NUMPY_ENABLETEST_FILE AND PYTHON_INCLUDE_DIRS)
+    ## try to compile and run
+    try_compile (
+      LADA_NPY_HAS_ENABLEFLAGS
+      ${CMAKE_BINARY_DIR}
+      ${NUMPY_ENABLETEST_FILE}
+      COMPILE_DEFINITIONS -I${PYTHON_INCLUDE_DIRS}  -I${NUMPY_INCLUDES} 
+      CMAKE_FLAGS -DLINK_LIBRARIES:STRING=${PYTHON_LIBRARIES}
+      OUTPUT_VARIABLE LADA_NPY_HAS_ENABLEFLAGS_COMPILE
+      )
+    ## display results
+    if (NOT NUMPY_FIND_QUIETLY)
+      message (STATUS "[NumPy] Testing PyArray_ENABLEFLAGS: ${LADA_NPY_HAS_ENABLEFLAGS}")
+    endif (NOT NUMPY_FIND_QUIETLY)
+  else (NUMPY_ENABLETEST_FILE AND PYTHON_INCLUDE_DIRS)
+    message (STATUS "[NumPy] enableflags -- Unable to locate test program!")
+  endif (NUMPY_ENABLETEST_FILE AND PYTHON_INCLUDE_DIRS)
+  unset(NUMPY_ENABLETEST_FILE)
+endif (NUMPY_INCLUDES AND NUMPY_LIBRARIES AND NOT LADA_NPY_HAS_ENABLEFLAGS)
+
 ## -----------------------------------------------------------------------------
 ## Actions taken when all components have been found
 
@@ -332,4 +388,8 @@ set (CMAKE_FIND_LIBRARY_PREFIXES ${TMP_FIND_LIBRARY_PREFIXES} CACHE STRING
   FORCE
   )
 
-
+# Get the major and minor version numbers
+string(REGEX REPLACE "\\." ";" _NUMPY_VERSION_LIST "${NUMPY_API_VERSION}")
+list(GET _NUMPY_VERSION_LIST 0 NUMPY_VERSION_MAJOR)
+list(GET _NUMPY_VERSION_LIST 1 NUMPY_VERSION_MINOR)
+list(GET _NUMPY_VERSION_LIST 2 NUMPY_VERSION_PATCH)

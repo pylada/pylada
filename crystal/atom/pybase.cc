@@ -99,7 +99,7 @@ PyTypeObject* atom_type()
 # undef PYLADA_DECLARE
 # define PYLADA_DECLARE(name, object, doc) \
     { const_cast<char*>(#name), T_OBJECT_EX, \
-      offsetof(Pylada::crystal::PyAtomObject, object), 0, const_cast<char*>(doc) }
+      LADA_OFFSETOF(Pylada::crystal::PyAtomObject, object), 0, const_cast<char*>(doc) }
   static PyMemberDef members[] = {
     PYLADA_DECLARE(__dict__, pydict, "Python attribute dictionary."),
 #   ifdef PYLADA_DEBUG
@@ -173,7 +173,7 @@ PyTypeObject* atom_type()
       (traverseproc)pylada_atom_traverse,  /* tp_traverse */
       (inquiry)pylada_atom_gcclear,        /* tp_clear */
       0,		                     /* tp_richcompare */
-      offsetof(PyAtomObject, weakreflist),   /* tp_weaklistoffset */
+      LADA_OFFSETOF(PyAtomObject, weakreflist),   /* tp_weaklistoffset */
       0,		                     /* tp_iter */
       0,		                     /* tp_iternext */
       methods,                           /* tp_methods */
@@ -183,7 +183,7 @@ PyTypeObject* atom_type()
       0,                                 /* tp_dict */
       0,                                 /* tp_descr_get */
       0,                                 /* tp_descr_set */
-      offsetof(PyAtomObject, pydict),        /* tp_dictoffset */
+      LADA_OFFSETOF(PyAtomObject, pydict),        /* tp_dictoffset */
       (initproc)pylada_atom_init,          /* tp_init */
       0,                                 /* tp_alloc */
       (newfunc)PyAtom_NewWithArgs,                /* tp_new */

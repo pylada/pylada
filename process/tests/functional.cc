@@ -43,10 +43,10 @@ int main(int argc, char *argv[])
   s = 0;
   if (rank == 0)
     for(i = 0; i < argc-1; ++i)
-      if(trim(argv[i]) == "--order")
-        n = atoi(argv[i+1]);
-      else if(trim(argv[i]) == "--sleep")
-        s = atoi(argv[i+1]);
+    {
+      if(trim(argv[i]) == "--order") { n = atoi(argv[i+1]); }
+      else if(trim(argv[i]) == "--sleep") { s = atoi(argv[i+1]); }
+    }
   MPI::COMM_WORLD.Bcast(&n, 1, MPI::INT, 0); 
   MPI::COMM_WORLD.Bcast(&s, 1, MPI::INT, 0); 
 

@@ -17,12 +17,12 @@ option(enum_package           "Include supercell enumeration package"      on)
 option(jobfolder_package      "Installs jobfolder python module."          on)
 option(ipython_interface      "Include IPython interface."                 on)
 option(ga_package             "Include genetic algorithm package"          on)
-option(compile_tests          "Compile tests."                             on)
-option(compile_debug_tests    "Fast way to debug new tests"                on)
+option(do_tests               "Compile tests."                             on)
+option(do_external_program_tests "Allow tests which run external programs (vasp, crystal...)" on)
 
-if(compile_tests OR compile_debug_tests)
+if(do_tests)
   ENABLE_TESTING()
-endif(compile_tests OR compile_debug_tests)
+endif(do_tests)
 
 # Location where cmake first looks for cmake modules.
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_modules)

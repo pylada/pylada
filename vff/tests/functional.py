@@ -155,6 +155,8 @@ def test_ingaas():
     
       
 if __name__ == '__main__':
-  test_inas(1e-7, False)
-  test_inas(1e-7, True)
-  test_ingaas()
+  import scipy
+  if tuple(int(u) for u in scipy.__version__.split('.')) >= (0, 11, 0):
+    test_inas(1e-7, False)
+    test_inas(1e-7, True)
+    test_ingaas()

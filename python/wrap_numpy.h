@@ -10,54 +10,38 @@
         (PyArrayObject*) PyArray_SimpleNewFromData(_in.cols() > 1? 2: 1, dims, t_ScalarType::value,
                                    (void*)(&_in(0,0)));
       if(result == NULL) return NULL;
-      // macro for row vs column major. The macro changed for npy >= 1.6
-#     ifdef PYLADA_MACRO
-#       error PYLADA_MACRO already defined
-#     endif
-#     ifdef NPY_ARRAY_C_CONTIGUOUS
-#       define PYLADA_MACRO NPY_ARRAY_C_CONTIGUOUS;
-#     else 
-#       define PYLADA_MACRO NPY_C_CONTIGUOUS
-#     endif
       // If has a parent, do not copy data, just incref it as base.
       if(_parent != NULL) 
       {
         // For some reason, eigen is column major, whereas c++ is generally row major.
-        if(result->flags & PYLADA_MACRO and not _in.IsRowMajor) 
-          result->flags -= PYLADA_MACRO;
-        else if((not (result->flags & PYLADA_MACRO)) and _in.IsRowMajor) 
-          result->flags |= PYLADA_MACRO;
+        if(PyArray_FLAGS(result) & NPY_ARRAY_C_CONTIGUOUS and not _in.IsRowMajor) 
+          PyArray_CLEARFLAGS(result, NPY_ARRAY_C_CONTIGUOUS);
+        else if((not (PyArray_FLAGS(result) & NPY_ARRAY_C_CONTIGUOUS)) and _in.IsRowMajor) 
+          PyArray_ENABLEFLAGS(result, NPY_ARRAY_C_CONTIGUOUS);
         if(_in.cols() == 1)
-          result->strides[0] = _in.innerStride() * sizeof(typename t_ScalarType::np_type);
+          PyArray_STRIDES(result)[0] = _in.innerStride() * sizeof(typename t_ScalarType::np_type);
         else if(_in.IsRowMajor) 
         {
-          result->strides[0] = _in.outerStride() * sizeof(typename t_ScalarType::np_type);
-          result->strides[1] = _in.innerStride() * sizeof(typename t_ScalarType::np_type);
+          PyArray_STRIDES(result)[0] = _in.outerStride() * sizeof(typename t_ScalarType::np_type);
+          PyArray_STRIDES(result)[1] = _in.innerStride() * sizeof(typename t_ScalarType::np_type);
         }
         else 
         {
-          result->strides[0] = _in.innerStride() * sizeof(typename t_ScalarType::np_type);
-          result->strides[1] = _in.outerStride() * sizeof(typename t_ScalarType::np_type);
+          PyArray_STRIDES(result)[0] = _in.innerStride() * sizeof(typename t_ScalarType::np_type);
+          PyArray_STRIDES(result)[1] = _in.outerStride() * sizeof(typename t_ScalarType::np_type);
         }
-        result->base = _parent;
         Py_INCREF(_parent);
+        PyArray_SetBaseObject(result, _parent);
       }
       // otherwise, copy data.
       else
       {
         for(int i(0); i < _in.rows(); ++i)
           for(int j(0); j < _in.cols(); ++j)
-            *((typename t_ScalarType::np_type*)
-                (result->data + i*result->strides[0] + j*result->strides[1])) = _in(i, j);
+            *((typename t_ScalarType::np_type*) PyArray_GETPTR2(result, i, j)) = _in(i, j);
       }
-#     undef PYLADA_MACRO
-#     ifdef NPY_ARRAY_WRITEABLE
-#       define PYLADA_MACRO NPY_ARRAY_WRITEABLE
-#     else
-#       define PYLADA_MACRO NPY_WRITEABLE
-#     endif
-        if(result->flags & PYLADA_MACRO) result->flags -= PYLADA_MACRO;
-#     undef PYLADA_MACRO
+      if(PyArray_FLAGS(result) & NPY_ARRAY_WRITEABLE)
+        PyArray_CLEARFLAGS(result, NPY_ARRAY_WRITEABLE);
       return (PyObject*)result;
     }
   //! Convert/wrap a matrix to numpy.
@@ -70,47 +54,38 @@
         (PyArrayObject*) PyArray_ZEROS(_in.cols() > 1? 2: 1, dims, t_ScalarType::value, _in.IsRowMajor?0:1):
         (PyArrayObject*) PyArray_SimpleNewFromData(_in.cols() > 1? 2: 1, dims, t_ScalarType::value, &_in(0,0));
       if(result == NULL) return NULL;
-      // macro for row vs column major. The macro changed for npy >= 1.6
-#     ifdef PYLADA_MACRO
-#       error PYLADA_MACRO already defined
-#     endif
-#     ifdef NPY_ARRAY_C_CONTIGUOUS
-#       define PYLADA_MACRO NPY_ARRAY_C_CONTIGUOUS;
-#     else 
-#       define PYLADA_MACRO NPY_C_CONTIGUOUS
-#     endif
       // If has a parent, do not copy data, just incref it as base.
       if(_parent != NULL) 
       {
         // For some reason, eigen is column major, whereas c++ is generally row major.
-        if(result->flags & PYLADA_MACRO and not _in.IsRowMajor) 
-          result->flags -= PYLADA_MACRO;
-        else if((not (result->flags & PYLADA_MACRO)) and _in.IsRowMajor) 
-          result->flags |= PYLADA_MACRO;
+        if(PyArray_FLAGS(result) & NPY_ARRAY_C_CONTIGUOUS and not _in.IsRowMajor) 
+          PyArray_CLEARFLAGS(result, NPY_ARRAY_C_CONTIGUOUS);
+        else if((not (PyArray_FLAGS(result) & NPY_ARRAY_C_CONTIGUOUS)) and _in.IsRowMajor) 
+          PyArray_ENABLEFLAGS(result, NPY_ARRAY_C_CONTIGUOUS);
         if(_in.cols() == 1)
-          result->strides[0] = _in.innerStride() * sizeof(typename t_ScalarType::np_type);
+          PyArray_STRIDES(result)[0] = _in.innerStride() * sizeof(typename t_ScalarType::np_type);
         else if(_in.IsRowMajor) 
         {
-          result->strides[0] = _in.outerStride() * sizeof(typename t_ScalarType::np_type);
-          result->strides[1] = _in.innerStride() * sizeof(typename t_ScalarType::np_type);
+          PyArray_STRIDES(result)[0] = _in.outerStride() * sizeof(typename t_ScalarType::np_type);
+          PyArray_STRIDES(result)[1] = _in.innerStride() * sizeof(typename t_ScalarType::np_type);
         }
         else 
         {
-          result->strides[0] = _in.innerStride() * sizeof(typename t_ScalarType::np_type);
-          result->strides[1] = _in.outerStride() * sizeof(typename t_ScalarType::np_type);
+          PyArray_STRIDES(result)[0] = _in.innerStride() * sizeof(typename t_ScalarType::np_type);
+          PyArray_STRIDES(result)[1] = _in.outerStride() * sizeof(typename t_ScalarType::np_type);
         }
-        result->base = _parent;
         Py_INCREF(_parent);
+        PyArray_SetBaseObject(result, _parent);
       }
       // otherwise, copy data.
       else
       {
         for(int i(0); i < _in.rows(); ++i)
           for(int j(0); j < _in.cols(); ++j)
-            *((typename t_ScalarType::np_type*)
-                (result->data + i*result->strides[0] + j*result->strides[1])) = _in(i, j);
+            *((typename t_ScalarType::np_type*) PyArray_GETPTR2(result, i, j)) = _in(i, j);
       }
-#     undef PYLADA_MACRO
+      if(not (PyArray_FLAGS(result) & NPY_ARRAY_WRITEABLE))
+        PyArray_ENABLEFLAGS(result, NPY_ARRAY_WRITEABLE);
       return (PyObject*)result;
     }
   //! Converts an input sequence to a cell.
@@ -121,16 +96,17 @@
       Py_ssize_t const N1(_out.cols());
       if(PyArray_Check(_in))
       {
-        if(PyArray_NDIM(_in) != 2)
+        PyArrayObject * const in_((PyArrayObject*)_in);
+        if(PyArray_NDIM(in_) != 2)
         {
-          npy_intp const n(PyArray_NDIM(_in));
+          npy_intp const n(PyArray_NDIM(in_));
           PYLADA_PYERROR_FORMAT(TypeError, "Expected a 2d array, got %id", int(n));
           return false;
         }
-        if(PyArray_DIM(_in, 0) != N0 or PyArray_DIM(_in, 1) != N1)
+        if(PyArray_DIM(in_, 0) != N0 or PyArray_DIM(in_, 1) != N1)
         {
-          npy_intp const n0(PyArray_DIM(_in, 0));
-          npy_intp const n1(PyArray_DIM(_in, 1));
+          npy_intp const n0(PyArray_DIM(in_, 0));
+          npy_intp const n1(PyArray_DIM(in_, 1));
           {                                                                         
             PyObject* err_module = PyImport_ImportModule("pylada.error");             
             if(err_module)                                                          
@@ -149,7 +125,7 @@
         }
         python::Object iterator = PyArray_IterNew(_in);
         if(not iterator) return false;
-        int const type = PyArray_DESCR(_in)->type_num;
+        int const type = PyArray_DESCR(in_)->type_num;
 #       ifdef  PYLADA_NPYITER
 #         error PYLADA_NPYITER already defined
 #       endif
@@ -271,7 +247,7 @@
       {
         python::Object iterator = PyArray_IterNew(_in);
         if(not iterator) return false;
-        int const type = PyArray_DESCR(_in)->type_num;
+        int const type = PyArray_DESCR((PyArrayObject*)_in)->type_num;
 #       ifdef PYLADA_NPYITER
 #         error PYLADA_NPYITER is already defined.
 #       endif

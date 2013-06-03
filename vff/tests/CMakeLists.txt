@@ -1,4 +1,4 @@
-if(NOT compile_debug_tests)
+if(do_tests)
 
   add_test(vff_node python ${CMAKE_CURRENT_SOURCE_DIR}/node.py)
   add_test(vff_tree python ${CMAKE_CURRENT_SOURCE_DIR}/tree.py)
@@ -11,4 +11,4 @@ if(NOT compile_debug_tests)
   add_test(vff_functional python ${CMAKE_CURRENT_SOURCE_DIR}/functional.py)
   add_test(vff_epirelax python ${CMAKE_CURRENT_SOURCE_DIR}/epirelax.py)
 
-endif(NOT compile_debug_tests)
+endif(do_tests)

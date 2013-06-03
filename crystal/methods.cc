@@ -1,101 +1,99 @@
 #ifdef PYLADA_MACRO 
 #  error PYLADA_MACRO ALREADY defined.
 #endif
-#define PYLADA_MACRO(NAME)                                                             \
- /** Wrapper around NAME function */                                                 \
- PyObject* NAME ## _wrapper(PyObject *_module, PyObject *_args)                      \
- {                                                                                   \
-   Py_ssize_t const N = PyTuple_Size(_args);                                         \
-   if(N != 3 and N != 2)                                                             \
-   {                                                                                 \
-     PYLADA_PYERROR(TypeError, #NAME " expects two vectors and a matrix as input.");   \
-     return NULL;                                                                    \
-   }                                                                                 \
-   math::rMatrix3d cell, invcell;                                                    \
-   if(not python::numpy::convert_to_matrix(PyTuple_GET_ITEM(_args, 1), cell)) return NULL;  \
-   if(N == 3 and not python::numpy::convert_to_matrix(PyTuple_GET_ITEM(_args, 2), invcell)) \
-     return NULL;                                                                    \
-   if(N == 2) invcell = cell.inverse();                                              \
-   PyObject *positions = PyTuple_GET_ITEM(_args, 0);                                 \
-   if(not PyArray_Check(positions))                                                  \
-   {                                                                                 \
-     math::rVector3d a;                                                              \
-     if(not python::numpy::convert_to_vector(positions, a)) return NULL;                    \
-     try                                                                             \
-     {                                                                               \
-       math::rVector3d vector = NAME(a, cell, invcell);                              \
-       npy_intp dim[1] = {3};                                                        \
-       PyObject* result = PyArray_SimpleNew(1, dim,                                  \
-           python::numpy::type<math::rVector3d::Scalar>::value );                    \
-       if(result == NULL) return NULL;                                               \
-       char * const elem = (char*const) PyArray_DATA(result);                        \
-       npy_intp const stride = PyArray_STRIDE(result, 0);                            \
-       *((math::rVector3d::Scalar*)elem) = vector[0];                                \
-       *((math::rVector3d::Scalar*)(elem+stride)) = vector[1];                       \
-       *((math::rVector3d::Scalar*)(elem+(stride<<1))) = vector[2];                  \
-       return result;                                                                \
-     }                                                                               \
-     /* catch exceptions. */                                                         \
-     catch(std::exception &_e)                                                       \
-     {                                                                               \
-       if(not PyErr_Occurred())                                                      \
-       {                                                                             \
-         PYLADA_PYERROR(internal, ( std::string("Caught c++ exception: ")              \
-                                  + _e.what()).c_str());                             \
-       }                                                                             \
-       return NULL;                                                                  \
-     }                                                                               \
-     catch(...)                                                                      \
-     {                                                                               \
-       if(not PyErr_Occurred())                                                      \
-       {                                                                             \
-         PYLADA_PYERROR(internal, "Caught c++ exception: ");                           \
-       }                                                                             \
-       return NULL;                                                                  \
-     }                                                                               \
-   }                                                                                 \
-   else                                                                              \
-   {                                                                                 \
-     int const ndim = PyArray_NDIM(positions);                                       \
-     npy_intp *shape = PyArray_DIMS(positions);                                      \
-     if(shape[ndim-1] != 3)                                                          \
-     {                                                                               \
-       PYLADA_PYERROR( ValueError,                                                     \
-                     "Last dimension of input numpy array is not of length 3.");     \
-       return NULL;                                                                  \
-     }                                                                               \
-     python::Object result(PyArray_SimpleNew(ndim, shape,                            \
-         python::numpy::type<math::rVector3d::Scalar>::value ));                     \
-     if(not result) return NULL;                                                     \
-     python::Object iter_pos( (PyObject*) PyArray_IterNew(positions) );              \
-     python::Object iter_res( (PyObject*) PyArray_IterNew(result.borrowed()) );      \
-     math::rVector3d a;                                                              \
-     int const type = ((PyArrayObject*)positions)->descr->type_num;                  \
-     while(PyArray_ITER_NOTDONE(iter_pos.borrowed()))                                \
-     {                                                                               \
-       /* Shouldn't need to check since last axis is of length == 3 */               \
-       for(size_t i(0); i < 3; ++i)                                                  \
-       {                                                                             \
-         void const * const data = PyArray_ITER_DATA(iter_pos.borrowed());           \
-         a(i) = python::numpy::cast_data<types::t_real>(data, type);                 \
-         PyArray_ITER_NEXT(iter_pos.borrowed());                                     \
-       }                                                                             \
-                                                                                     \
-       /* Perform action */                                                          \
-       math::rVector3d const vector = NAME(a, cell, invcell);                        \
-                                                                                     \
-       /* copies result */                                                           \
-       for(size_t i(0); i < 3; ++i)                                                  \
-       {                                                                             \
-         *( (python::numpy::type<math::rVector3d::Scalar>::np_type*)                 \
-             PyArray_ITER_DATA(iter_res.borrowed()) )                                \
-           = (python::numpy::type<math::rVector3d::Scalar>::np_type) vector(i);      \
-         PyArray_ITER_NEXT(iter_res.borrowed());                                     \
-       }                                                                             \
-     }                                                                               \
-     return result.release();                                                        \
-   }                                                                                 \
-   return NULL;                                                                      \
+#define PYLADA_MACRO(NAME)                                                                         \
+ /** Wrapper around NAME function */                                                               \
+ PyObject* NAME ## _wrapper(PyObject *_module, PyObject *_args)                                    \
+ {                                                                                                 \
+   Py_ssize_t const N = PyTuple_Size(_args);                                                       \
+   if(N != 3 and N != 2)                                                                           \
+   {                                                                                               \
+     PYLADA_PYERROR(TypeError, #NAME " expects two vectors and a matrix as input.");               \
+     return NULL;                                                                                  \
+   }                                                                                               \
+   math::rMatrix3d cell, invcell;                                                                  \
+   if(not python::numpy::convert_to_matrix(PyTuple_GET_ITEM(_args, 1), cell)) return NULL;         \
+   if(N == 3 and not python::numpy::convert_to_matrix(PyTuple_GET_ITEM(_args, 2), invcell))        \
+     return NULL;                                                                                  \
+   if(N == 2) invcell = cell.inverse();                                                            \
+   PyObject *positions = PyTuple_GET_ITEM(_args, 0);                                               \
+   if(not PyArray_Check(positions))                                                                \
+   {                                                                                               \
+     math::rVector3d a;                                                                            \
+     if(not python::numpy::convert_to_vector(positions, a)) return NULL;                           \
+     try                                                                                           \
+     {                                                                                             \
+       math::rVector3d vector = NAME(a, cell, invcell);                                            \
+       npy_intp dim[1] = {3};                                                                      \
+       PyObject* result = PyArray_SimpleNew(1, dim,                                                \
+           python::numpy::type<math::rVector3d::Scalar>::value );                                  \
+       if(result == NULL) return NULL;                                                             \
+       *((math::rVector3d::Scalar*)PyArray_GETPTR1((PyArrayObject*)result, 0)) = vector[0];        \
+       *((math::rVector3d::Scalar*)PyArray_GETPTR1((PyArrayObject*)result, 1)) = vector[1];        \
+       *((math::rVector3d::Scalar*)PyArray_GETPTR1((PyArrayObject*)result, 2)) = vector[2];        \
+       return result;                                                                              \
+     }                                                                                             \
+     /* catch exceptions. */                                                                       \
+     catch(std::exception &_e)                                                                     \
+     {                                                                                             \
+       if(not PyErr_Occurred())                                                                    \
+       {                                                                                           \
+         PYLADA_PYERROR(internal, ( std::string("Caught c++ exception: ")                          \
+                                  + _e.what()).c_str());                                           \
+       }                                                                                           \
+       return NULL;                                                                                \
+     }                                                                                             \
+     catch(...)                                                                                    \
+     {                                                                                             \
+       if(not PyErr_Occurred())                                                                    \
+       {                                                                                           \
+         PYLADA_PYERROR(internal, "Caught c++ exception: ");                                       \
+       }                                                                                           \
+       return NULL;                                                                                \
+     }                                                                                             \
+   }                                                                                               \
+   else                                                                                            \
+   {                                                                                               \
+     int const ndim = PyArray_NDIM((PyArrayObject*)positions);                                     \
+     npy_intp *shape = PyArray_DIMS((PyArrayObject*)positions);                                    \
+     if(shape[ndim-1] != 3)                                                                        \
+     {                                                                                             \
+       PYLADA_PYERROR( ValueError,                                                                 \
+                     "Last dimension of input numpy array is not of length 3.");                   \
+       return NULL;                                                                                \
+     }                                                                                             \
+     python::Object result(PyArray_SimpleNew(ndim, shape,                                          \
+         python::numpy::type<math::rVector3d::Scalar>::value ));                                   \
+     if(not result) return NULL;                                                                   \
+     python::Object iter_pos( (PyObject*) PyArray_IterNew(positions) );                            \
+     python::Object iter_res( (PyObject*) PyArray_IterNew(result.borrowed()) );                    \
+     math::rVector3d a;                                                                            \
+     int const type = PyArray_TYPE((PyArrayObject*)positions);                                     \
+     while(PyArray_ITER_NOTDONE(iter_pos.borrowed()))                                              \
+     {                                                                                             \
+       /* Shouldn't need to check since last axis is of length == 3 */                             \
+       for(size_t i(0); i < 3; ++i)                                                                \
+       {                                                                                           \
+         void const * const data = PyArray_ITER_DATA(iter_pos.borrowed());                         \
+         a(i) = python::numpy::cast_data<types::t_real>(data, type);                               \
+         PyArray_ITER_NEXT(iter_pos.borrowed());                                                   \
+       }                                                                                           \
+                                                                                                   \
+       /* Perform action */                                                                        \
+       math::rVector3d const vector = NAME(a, cell, invcell);                                      \
+                                                                                                   \
+       /* copies result */                                                                         \
+       for(size_t i(0); i < 3; ++i)                                                                \
+       {                                                                                           \
+         *( (python::numpy::type<math::rVector3d::Scalar>::np_type*)                               \
+             PyArray_ITER_DATA(iter_res.borrowed()) )                                              \
+           = (python::numpy::type<math::rVector3d::Scalar>::np_type) vector(i);                    \
+         PyArray_ITER_NEXT(iter_res.borrowed());                                                   \
+       }                                                                                           \
+     }                                                                                             \
+     return result.release();                                                                      \
+   }                                                                                               \
+   return NULL;                                                                                    \
  }
  PYLADA_MACRO(into_cell)
  PYLADA_MACRO(into_voronoi)

@@ -24,12 +24,12 @@ def mklist(Class, N):
 
 def get_mem(id):
   from subprocess import Popen, PIPE
-  output = Popen(["ps","--pid", "{0}".format(id), '-o', 'rss'], stdout=PIPE).communicate()[0].split('\n')[-2]
+  output = Popen(["ps","-p", "{0}".format(id), '-o', 'rss'], stdout=PIPE).communicate()[0].splitlines()[-1]
   return int(output)
 
 def mem_per_structure(N):
   import gc
-  from os import system, getpid
+  from os import getpid
   from pylada.crystal.cppwrappers import Structure
   id = getpid()
   gc.set_debug(gc.DEBUG_OBJECTS | gc.DEBUG_UNCOLLECTABLE)
@@ -45,7 +45,7 @@ def mem_per_structure(N):
 
 def test(Class, N, mem_per_structure): 
   import gc
-  from os import system, getpid
+  from os import getpid
   gc.set_debug(gc.DEBUG_OBJECTS | gc.DEBUG_UNCOLLECTABLE)
 
   id = getpid()

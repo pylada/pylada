@@ -10,7 +10,7 @@ template<size_t N0, size_t N1>  PyObject* new_identity()
   PyArrayObject *result = (PyArrayObject*) new_matrix<N0, N1>();
   if(not result) return NULL;
   for(size_t i(0); i < std::min(N0, N1); ++i)
-    *((types::t_real*)(result->data + i*result->strides[0] + i*result->strides[1])) = 1;
+    *((types::t_real*)PyArray_GETPTR2(result, i, i)) = 1;
   return (PyObject*)result;
 }
 
@@ -99,7 +99,8 @@ PyObject* cell_invariants(math::rMatrix3d const &_cell, types::t_real _tolerance
         for(; item.is_valid() and doadd; item.reset(PyIter_Next(iterator.borrowed())))
         {
           // reinitializes operation map.
-          types::t_real *const symop = (types::t_real*)PyArray_DATA(item.borrowed());
+          types::t_real *const symop
+            = (types::t_real*)PyArray_DATA((PyArrayObject*)item.borrowed());
           Eigen::Map<math::rMatrix3d> rotmap(symop);
           doadd = math::neq(rotmap, rotation, _tolerance);
         }
@@ -108,7 +109,8 @@ PyObject* cell_invariants(math::rMatrix3d const &_cell, types::t_real _tolerance
         // adds to vector of symmetries.
         python::Object symop = new_matrix<4, 3>();
         if(not symop) return NULL;
-        types::t_real * const symop_ = (types::t_real*)PyArray_DATA(symop.borrowed());
+        types::t_real * const symop_ = 
+          (types::t_real*)PyArray_DATA((PyArrayObject*)symop.borrowed());
         Eigen::Map< Eigen::Matrix<types::t_real, 4, 3> > opmap(symop_);
         opmap.block<3,3>(0,0) = rotation;
         opmap.block<1,3>(3,0) = math::rVector3d::Zero();
@@ -185,7 +187,7 @@ PyObject* space_group(Structure const &_lattice, types::t_real _tolerance)
   python::Object symop = PyIter_Next(i_op.borrowed());
   for( ; symop.is_valid(); symop.reset(PyIter_Next(i_op.borrowed())))
   {
-    types::t_real * const symop_ = (types::t_real*)((PyArrayObject*)symop.borrowed())->data;
+    types::t_real * const symop_ = (types::t_real*)PyArray_DATA((PyArrayObject*)symop.borrowed());
     Eigen::Map< Eigen::Matrix<types::t_real, 4, 3> > opmap(symop_);
     // loop over possible translations.
     std::vector<math::rVector3d> :: const_iterator i_trial = translations.begin();

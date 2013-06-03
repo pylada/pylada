@@ -129,7 +129,7 @@ PyTypeObject* structure_type()
 #  undef PYLADA_DECLARE
 #  define PYLADA_DECLARE(name, object, doc) \
      { const_cast<char*>(#name), T_OBJECT_EX, \
-       offsetof(PyStructureObject, object), 0, const_cast<char*>(doc) }
+       LADA_OFFSETOF(PyStructureObject, object), 0, const_cast<char*>(doc) }
    static PyMemberDef members[] = {
      PYLADA_DECLARE(__dict__, pydict, "Python attribute dictionary."),
 #    ifdef PYLADA_DEBUG
@@ -249,7 +249,7 @@ PyTypeObject* structure_type()
        (traverseproc)structure_traverse,  /* tp_traverse */
        (inquiry)structure_gcclear,        /* tp_clear */
        0,		                     /* tp_richcompare */
-       offsetof(PyStructureObject, weakreflist),   /* tp_weaklistoffset */
+       LADA_OFFSETOF(PyStructureObject, weakreflist),   /* tp_weaklistoffset */
        (getiterfunc)structureiterator_create,  /* tp_iter */
        0,		                     /* tp_iternext */
        methods,                           /* tp_methods */
@@ -259,7 +259,7 @@ PyTypeObject* structure_type()
        0,                                 /* tp_dict */
        0,                                 /* tp_descr_get */
        0,                                 /* tp_descr_set */
-       offsetof(PyStructureObject, pydict),   /* tp_dictoffset */
+       LADA_OFFSETOF(PyStructureObject, pydict),   /* tp_dictoffset */
        (initproc)structure_init,          /* tp_init */
        0,                                 /* tp_alloc */
        (newfunc)PyStructure_NewWithArgs,  /* tp_new */

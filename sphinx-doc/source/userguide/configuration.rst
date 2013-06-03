@@ -408,21 +408,3 @@ There are only two variable specific to vasp calculations:
    compile should be addressed to the relevant authorities.
 
 .. _format string: http://docs.python.org/library/st dtypes.html#str.format
-
-.. 
-..     Setting up MPI <installation/mpi>
-.. 
-..     Setting up the PBS/Slurm ressources <installation/ressources>
-.. 
-..     Setting up the ipython interface <installation/ipython>
-.. 
-..     Setting up VASP <installation/vasp>
-.. 
-..  Compiling and installing the code
-..  =================================
-.. 
-..  Setting up data directories
-..  ===========================
-.. 
-..  Creating the documentation
-..  ==========================

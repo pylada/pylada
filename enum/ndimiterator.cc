@@ -4,7 +4,7 @@
 #include <structmember.h>
 #define PY_ARRAY_UNIQUE_SYMBOL pylada_enum_ARRAY_API
 #define NO_IMPORT_ARRAY
-#include <numpy/arrayobject.h>
+#include <python/include_numpy.h>
 
 #include <vector>
 #include <algorithm>
@@ -131,7 +131,7 @@ namespace Pylada
       if(_self->yielded->flags & PYLADA_MACRO) _self->yielded->flags -= PYLADA_MACRO;
 #     undef PYLADA_MACRO
 #     ifdef NPY_ARRAY_C_CONTIGUOUS
-#       define PYLADA_MACRO NPY_ARRAY_C_CONTIGUOUS;
+#       define PYLADA_MACRO NPY_ARRAY_C_CONTIGUOUS
 #     else 
 #       define PYLADA_MACRO NPY_C_CONTIGUOUS
 #     endif

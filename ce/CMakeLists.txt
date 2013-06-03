@@ -8,9 +8,9 @@ include_directories(${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDES})
 add_library (pyce SHARED ${CE_CC} ${CE_H})
 set_target_properties(pyce PROPERTIES OUTPUT_NAME cppwrappers)
 set_target_properties(pyce PROPERTIES PREFIX "")
+set_target_properties(pyce PROPERTIES SUFFIX ".so")
+target_link_libraries(pyce ${PYTHON_LIBRARIES})
 install(TARGETS pyce DESTINATION ${CMAKE_PYINSTALL_PREFIX}/pylada/ce)
 
 
-if(compile_tests OR compile_debug_tests)
-  add_subdirectory(tests)
-endif(compile_tests OR compile_debug_tests)
+add_subdirectory(tests)

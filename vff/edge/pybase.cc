@@ -4,7 +4,7 @@
 #include <structmember.h>
 #define PY_ARRAY_UNIQUE_SYMBOL pylada_vff_ARRAY_API
 #define NO_IMPORT_ARRAY
-#include <numpy/arrayobject.h>
+#include <python/include_numpy.h>
 
 
 #define PYLADA_NO_IMPORT

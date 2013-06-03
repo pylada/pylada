@@ -20,19 +20,19 @@ namespace zincblende
           PYLADA_PYERROR(TypeError, "Unexpected bond-parameters in vff.");
           return NULL;
         }
-        if(result->descr->type_num != python::numpy::type<types::t_real>::value)
+        if(PyArray_TYPE(result) != python::numpy::type<types::t_real>::value)
         {
           Py_DECREF(result); 
           PYLADA_PYERROR(TypeError, "Unexpected array kind for bond-parameters.");
           return NULL;
         }
-        if(result->nd != 1)
+        if(PyArray_NDIM(result) != 1)
         {
           Py_DECREF(result); 
           PYLADA_PYERROR(TypeError, "Unexpected number of bond-parameters in vff.");
           return NULL;
         }
-        if(result->dimensions[0] != 6)
+        if(PyArray_DIM(result, 0) != 6)
         {
           Py_DECREF(result); 
           PYLADA_PYERROR(TypeError, "Unexpected number of bond-parameters in vff.");
@@ -58,19 +58,19 @@ namespace zincblende
           PYLADA_PYERROR(TypeError, "Unexpected bond-parameters in vff.");
           return NULL;
         }
-        if(result->descr->type_num != python::numpy::type<types::t_real>::value)
+        if(PyArray_TYPE(result) != python::numpy::type<types::t_real>::value)
         {
           Py_DECREF(result); 
           PYLADA_PYERROR(TypeError, "Unexpected array kind for bond-parameters.");
           return NULL;
         }
-        if(result->nd != 1)
+        if(PyArray_NDIM(result) != 1)
         {
           Py_DECREF(result); 
           PYLADA_PYERROR(TypeError, "Unexpected number of bond-parameters in vff.");
           return NULL;
         }
-        if(result->dimensions[0] != 7)
+        if(PyArray_DIM(result, 0) != 7)
         {
           Py_DECREF(result); 
           PYLADA_PYERROR(TypeError, "Unexpected number of bond-parameters in vff.");

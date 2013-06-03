@@ -39,18 +39,18 @@ def test():
   assert a.output_map(vasp=a)['nsw'] == str(25)
 
   a.relaxation = 'ions'
-  assert a.relaxation == 'ions'
+  assert a.relaxation == 'ionic'
   assert a.isif == 2
   a.relaxation = 'ionic'
-  assert a.relaxation == 'ions'
+  assert a.relaxation == 'ionic'
   assert a.isif == 2
 
   a.relaxation = 'cellshape, volume ions'
-  assert a.relaxation == 'cellshape ions volume'
+  assert a.relaxation == 'cellshape ionic volume'
   assert a.isif == 3
 
-  a.relaxation = 'cellshape, ions'
-  assert a.relaxation == 'cellshape ions'
+  a.relaxation = 'cellshape, ionic'
+  assert a.relaxation == 'cellshape ionic'
   assert a.isif == 4
 
   a.relaxation = 'volume'

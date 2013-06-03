@@ -3,6 +3,4 @@ set(PYIPY_PY __init__.py explore.py savefolders.py goto.py listfolders.py
 install(FILES ${PYIPY_PY} DESTINATION ${CMAKE_PYINSTALL_PREFIX}/pylada/ipython)
 add_subdirectory(launch)
 
-if(compile_tests OR compile_debug_tests)
-  add_subdirectory(tests)
-endif(compile_tests OR compile_debug_tests)
+add_subdirectory(tests)

@@ -4,7 +4,7 @@
 #include <structmember.h>
 #define PY_ARRAY_UNIQUE_SYMBOL pylada_enum_ARRAY_API
 #define NO_IMPORT_ARRAY
-#include <numpy/arrayobject.h>
+#include <python/include_numpy.h>
 
 #include <vector>
 #include <algorithm>
@@ -124,7 +124,7 @@ namespace Pylada
       if(_self->yielded->flags & PYLADA_MACRO) _self->yielded->flags -= PYLADA_MACRO;
 #     undef PYLADA_MACRO
 #     ifdef NPY_ARRAY_C_CONTIGUOUS
-#       define PYLADA_MACRO NPY_ARRAY_C_CONTIGUOUS;
+#       define PYLADA_MACRO NPY_ARRAY_C_CONTIGUOUS
 #     else 
 #       define PYLADA_MACRO NPY_C_CONTIGUOUS
 #     endif
@@ -268,7 +268,7 @@ namespace Pylada
 #     undef PYLADA_DECLARE
 #     define PYLADA_DECLARE(name, object, doc) \
         { const_cast<char*>(#name), T_OBJECT_EX, \
-          offsetof(FCIterator, object), 0, const_cast<char*>(doc) }
+          LADA_OFFSETOF(FCIterator, object), 0, const_cast<char*>(doc) }
       static PyMemberDef members[] = {
         PYLADA_DECLARE(yielded, yielded, "Object to be yielded."),
         {NULL, 0, 0, 0, NULL}  /* Sentinel */

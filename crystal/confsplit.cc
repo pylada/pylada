@@ -2,7 +2,8 @@
 #  error PYLADA_GET_TRANS already defined
 #endif
 #define PYLADA_GET_TRANS(NEIGH) \
-    (math::rVector3d::Scalar*)PyArray_DATA(PyTuple_GET_ITEM((PyTupleObject*)NEIGH, 1))
+    (math::rVector3d::Scalar*)PyArray_DATA( \
+        (PyArrayObject*)PyTuple_GET_ITEM((PyTupleObject*)NEIGH, 1))
 typedef Eigen::Map<math::rVector3d> t_NpMap;
 typedef python::RAList_iterator pylist_iter;
 typedef python::RATuple_iterator pytuple_iter;
