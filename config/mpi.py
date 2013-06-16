@@ -40,8 +40,12 @@ def machine_dependent_call_modifier(formatter=None, comm=None, env=None):
 
       :return: ignored
   """
+  from pylada.misc import bugLev
   if len(getattr(comm, 'machines', [])) != 0:
-    formatter['placement'] = "-machinefile {0}".format(comm.nodefile())
+    nfile = comm.nodefile()
+    formatter['placement'] = "-machinefile {0}".format( nfile)
+    if bugLev >= 5:
+      print "config/mpi: machine_dependent_call_modifier: nodefile: ", nfile
 
 def modify_global_comm(communicator):
   """ Modifies global communicator so placement can be done correctly. 
@@ -185,7 +189,10 @@ debug_queue = "queue", "debug"
     First part of the tuple is the keyword argument to modify when calling
     the pbs job, and the second is its value.
 """
-qsub_exe = "sbatch"
+
+
+# qsub_exe = "sbatch"
+qsub_exe = "msub"
 """ Qsub/sbatch executable. """
 qsub_array_exe = None
 """ Qsub for job arrays.
@@ -197,24 +204,70 @@ qsub_array_exe = None
 
     The format ``{array}`` will receive the arrays to launch.
 """
-qdel_exe = 'scancel'
+
+
+# qdel_exe = 'scancel'
+qdel_exe = 'mjobctl -c'
 """ Qdel/scancel executable. """
 
 default_pbs = { 'account': accounts[0], 'walltime': "00:30:00", 'nnodes': 1,
                 'ppn': 1, 'header': "", 'footer': "" }
 """ Defaults parameters filling the pbs script. """
+
+#pbs_string =  '''#!/bin/bash
+##SBATCH --account={account}
+##SBATCH --time={walltime}
+##SBATCH -N {nnodes}
+##SBATCH -e {err}
+##SBATCH -o {out}
+##SBATCH -J {name}
+##SBATCH -D {directory}
+#
+#echo config/mpi.py pbs_string: header: {header}
+#echo config/mpi.py pbs_string: scriptcommand: python {scriptcommand}
+#echo config/mpi.py pbs_string: footer: {footer}
+#
+#{header}
+#python {scriptcommand}
+#{footer}
+#
+#'''
+
 pbs_string =  '''#!/bin/bash
-#SBATCH --account={account}
-#SBATCH --time={walltime}
-#SBATCH -N {nnodes}
-#SBATCH -e {err}
-#SBATCH -o {out}
-#SBATCH -J {name}
-#SBATCH -D {directory}
+#PBS -A {account}
+#PBS -q batch
+#PBS -l walltime={walltime}
+#PBS -l nodes={nnodes}
+#PBS -e {err}
+#PBS -o {out}
+#PBS -N {name}
+#PBS -d {directory}
 
 echo config/mpi.py pbs_string: header: {header}
 echo config/mpi.py pbs_string: scriptcommand: python {scriptcommand}
 echo config/mpi.py pbs_string: footer: {footer}
+
+echo config/mpi.py pbs_string: which python A: $(which python)
+. /home/ssulliva/virtipy/bin/activate
+echo config/mpi.py pbs_string: which python B: $(which python)
+
+export PYTHONPATH=/nopt/nrel/apps/epel/6.3/usr/lib/python2.6/site-packages:/nopt/nrel/ecom/cid/pylada/5.0/pinstall/lib64/python2.6/site-packages
+
+python -c 'import argparse'
+echo config/mpi.py pbs_string: after test argparse
+
+python -c 'import numpy'
+echo config/mpi.py pbs_string: after test numpy
+
+python -c 'import quantities'
+echo config/mpi.py pbs_string: after test quantities
+
+python -c 'import mpi4py'
+echo config/mpi.py pbs_string: after test mpi4py
+
+export LD_LIBRARY_PATH=/nopt/intel/13.0/composer_xe_2013.3.163/mkl/lib/intel64/:/nopt/intel/13.0/impi/4.1.0.024/intel64/lib:/nopt/intel/13.0/composer_xe_2013.1.117/ipp/lib/intel64:/nopt/intel/13.0/composer_xe_2013.1.117/tbb/lib/intel64:/nopt/intel/13.0/composer_xe_2013.1.117/compiler/lib/intel64:/nopt/torque/lib
+
+
 
 {header}
 python {scriptcommand}
@@ -222,6 +275,7 @@ python {scriptcommand}
 
 '''
 """ Default pbs/slurm script. """
+
 
 do_multiple_mpi_programs = True
 """ Whether to get address of host machines at start of calculation. """

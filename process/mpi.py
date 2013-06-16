@@ -124,15 +124,24 @@ class Communicator(dict):
     """
     from tempfile import NamedTemporaryFile
     from ..misc import RelativePath
+    from pylada.misc import bugLev
 
     if self._nodefile is not None:
-      raise NodeFileExists("Please call cleanup first.")
+      if bugLev >= 5:
+        print 'process/mpi.py: old nodefile: ', self._nodefile
+      raise NodeFileExists("Please call cleanup first.  nodefile: \"%s\""
+        % (self._nodefile,))
     if self['n'] == 0: raise MPISizeError("No processes in this communicator.")
 
     with NamedTemporaryFile(dir=RelativePath(dir).path, delete=False, prefix='pylada_comm') as file:
+      if bugLev >= 5:
+        print 'process/mpi.py: new nodefile: ', file.name
       for machine, slots in self.machines.iteritems():
         if slots == 0: continue
-        file.write('{0} slots={1}\n'.format(machine, slots))
+        ##file.write('{0} slots={1}\n'.format(machine, slots))
+        file.write( machine)
+        if bugLev >= 5:
+          print '  machine: %s  slots: %s' % (machine, slots,)
 
       self._nodefile = file.name
     return self._nodefile

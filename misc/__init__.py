@@ -172,6 +172,7 @@ def exec_input( script, global_dict=None, local_dict=None,
   from . import Input
   import quantities
   
+  if bugLev >= 5: print "misc/init: exec_input: entry"
   # Add some names to execution environment.
   if global_dict is None: global_dict = {}
   global_dict.update( { "environ": environ, "pi": pi, "array": array, "matrix": matrix, "dot": dot,
