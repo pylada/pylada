@@ -48,20 +48,31 @@ class JobFolder(object):
     """
     return self._functional
 
+
   @functional.setter
   def functional(self, value):
     from pickle import dumps, loads # ascertains pickle-ability, copies functional
+    from pylada.misc import bugLev
+
     if value is not None and not hasattr(value, "__call__"):
       raise ValueError("folder.functional should be either None(no job) or a callable.")
     # ascertains pickle-ability
     try: string = dumps(value)
     except Exception as e:
-      raise ValueError("Could not pickle functional. Caught Error:\n{0}".format(e))
+      raise ValueError(
+        "Could not pickle functional. Caught Error:\n{0}".format(e))
+
+    if bugLev >= 1:
+      print 'jobfolder.functional.setter: value: ', value
+      print 'jobfolder.functional.setter: string: ', string
     try: self._functional = loads(string)
     except Exception as e:
       raise ValueError("Could not reload pickled functional. Caught Error:\n{0}".format(e))
+
+
   @functional.deleter
   def functional(self): self._functional = None
+
 
   @property
   def name(self):
@@ -75,10 +86,12 @@ class JobFolder(object):
      if string is None: raise RuntimeError("Could not determine the name of the dictionary.")
      return string + '/'
 
+
   @property
   def is_executable(self):
     """ True if functional is not None. """
     return self.functional is not None
+
 
   @property
   def untagged_folders(self):
@@ -87,6 +100,7 @@ class JobFolder(object):
     for name, folder in self.iteritems():
       if not folder.is_tagged: result += "  " + name + "\n"
     return result
+
 
   @property
   def is_tagged(self):
@@ -98,10 +112,12 @@ class JobFolder(object):
     """
     return hasattr(self, "_tagged")
 
+
   @property
   def nbfolders(self):
     """ Returns the number of folders in sub-tree. """
     return len([0 for j, o in self.iteritems()])
+
 
   @property 
   def root(self): 
@@ -109,6 +125,7 @@ class JobFolder(object):
     result = self
     while result.parent is not None: result = result.parent
     return result
+
 
   def __getitem__(self, index): 
     """ Returns folder description from the dictionary.
@@ -132,6 +149,7 @@ class JobFolder(object):
       else: raise KeyError("folder " + index + " does not exist.")
     return result
  
+
   def __delitem__(self, index): 
     """ Returns folder description from the dictionary.
 
@@ -157,6 +175,7 @@ class JobFolder(object):
       if id(self) == id(parent.children[name]): raise KeyError("Will not delete self.")
       return parent.children.pop(name)
     raise KeyError("folder " + index + " does not exist.")
+
 
   def __setitem__(self, name, value): 
     """ Sets folder/subfolder description in the dictionary.
@@ -184,6 +203,7 @@ class JobFolder(object):
     parent = self if len(parentpath) == 0 else self[parentpath]
     parent.children[childpath] = deepcopy(value)
     parent.children[childpath].parent = parent
+
 
   def __div__(self, name): 
     """ Adds a folderdictionary to the tree. 
@@ -215,10 +235,12 @@ class JobFolder(object):
       result = result.children[name]
     return result
 
+
   def subfolders(self):
     """ Sorted keys of the folders directly under this one. """
     return sorted(self.children.iterkeys())
     
+
   def compute(self, **kwargs):
     """ Executes the functional in this particular folder.
     
@@ -234,10 +256,25 @@ class JobFolder(object):
 
         >>> return self.functional(**self.params.copy().update(kwargs))
     """  
+    from pylada.misc import bugLev
+
     if not self.is_executable: return None
     params = self.params.copy()
     params.update(kwargs)
-    return self.functional.__call__(**params)
+    if bugLev >= 1:
+      print 'jobfolder.compute: self: ', self
+      print 'jobfolder.compute: kwargs: ', kwargs
+      print 'jobfolder.compute: params: ', params
+      print 'jobfolder.compute: self.functional: ', self.functional
+      print 'jobfolder.compute: type(self.functional): ', type(self.functional)
+      print 'jobfolder.compute: before call'
+
+    res = self.functional.__call__(**params)
+    if bugLev >= 1:
+      print 'jobfolder.compute: after call'
+
+    return res
+
 
   def update(self, other, merge=False):
     """ Updates folder and tree with other.

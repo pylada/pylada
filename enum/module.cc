@@ -26,11 +26,11 @@ namespace Pylada
         PYLADA_PYERROR(TypeError, "input must be a numpy array.\n");
         return NULL;
       }
-      if(PyArray_ISINTEGER(_array)) Py_RETURN_TRUE;
+      if(PyArray_ISINTEGER( (const PyArrayObject *)_array)) Py_RETURN_TRUE;
       python::Object iterator(PyArray_IterNew(_array));
       if(not iterator) return NULL;
       PyObject* i_iterator = iterator.borrowed();
-      int const type = ((PyArrayObject*)_array)->descr->type_num;
+      int const type = PyArray_DESCR((PyArrayObject*) _array)->type_num;
 #     ifdef PYLADA_IFTYPE
 #       error PYLADA_IFTYPE already defined
 #     endif

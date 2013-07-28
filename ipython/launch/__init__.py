@@ -132,10 +132,11 @@ def get_mppalloc(shell, event, withdefault=True):
   if mppalloc is None and withdefault:
     def mppalloc(job): 
       """ Returns number of processes for this job. """
-      N = len(job.structure) # number of atoms.
+      natom = len(job.structure) # number of atoms.
       # Round down to a multiple of ppn
-      N = (N / event.ppn) * event.ppn
-      return max( N, 1)  
+      nnode = max( 1, natom / event.ppn)
+      nproc = nnode * event.ppn
+      return nproc
   if bugLev >= 1:
     print "launch/init: mppalloc b: %s" % (mppalloc,)
   return mppalloc

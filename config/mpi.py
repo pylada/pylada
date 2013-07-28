@@ -45,7 +45,10 @@ def machine_dependent_call_modifier(formatter=None, comm=None, env=None):
     nfile = comm.nodefile()
     formatter['placement'] = "-machinefile {0}".format( nfile)
     if bugLev >= 5:
-      print "config/mpi: machine_dependent_call_modifier: nodefile: ", nfile
+      print "config/mpi: machine_dep_call_mod: nodefile: \"%s\"" % (nfile,)
+      with open( nfile) as fin:
+        print "config/mpi: machine_dep_call_mod: nodefile contents: \"%s\"" \
+          %(fin.read(),)
 
 def modify_global_comm(communicator):
   """ Modifies global communicator so placement can be done correctly. 
@@ -144,15 +147,28 @@ def launch_program( cmdl, comm=None, formatter=None, env=None,
 
   # Split command from string to list
   if bugLev >= 1:
-    print "config/mpi: launch_program: final cmdl: \"%s\"" % (cmdl,)
+    print "config/mpi: launch_program: final full cmdl: \"%s\"" % (cmdl,)
   cmdl = shlex_split(cmdl)
+  if bugLev >= 1:
+    print "config/mpi: launch_program: final split cmdl: %s" % (cmdl,)
+    print "config/mpi: launch_program: final stdout: %s" % (stdout,)
+    print "config/mpi: launch_program: final stderr: %s" % (stderr,)
+    print "config/mpi: launch_program: final stdin: %s" % (stdin,)
+    print "config/mpi: launch_program: final outdir: \"%s\"" % (outdir,)
+    print "config/mpi: launch_program: final env: %s" % (env,)
 
   # makes sure the directory exists:
   if outdir is not None:
     with Changedir(outdir) as cwd: pass
-  # finally, start process.
-  return Popen( cmdl, stdout=stdout, stderr=stderr, stdin=stdin, cwd=outdir,
-                env=env )
+
+  # Finally, start the process.
+  popen = Popen( cmdl, stdout=stdout, stderr=stderr, stdin=stdin,
+    cwd=outdir, env=env )
+  if bugLev >= 1:
+    print "config/mpi: launch_program: popen: %s" % (popen,)
+    print "config/mpi: launch_program: popen.pid: %s" % (popen.pid,)
+
+  return popen
 
 
 
@@ -233,6 +249,7 @@ default_pbs = { 'account': accounts[0], 'walltime': "00:30:00", 'nnodes': 1,
 #
 #'''
 
+
 pbs_string =  '''#!/bin/bash
 #PBS -A {account}
 #PBS -q batch
@@ -243,15 +260,57 @@ pbs_string =  '''#!/bin/bash
 #PBS -N {name}
 #PBS -d {directory}
 
+cd {directory}
+
 echo config/mpi.py pbs_string: header: {header}
 echo config/mpi.py pbs_string: scriptcommand: python {scriptcommand}
 echo config/mpi.py pbs_string: footer: {footer}
 
 echo config/mpi.py pbs_string: which python A: $(which python)
-. /home/ssulliva/virtipy/bin/activate
+
+
+
+
+
+module load mkl/13.1.117/intel
+module load suitesparse/4.2.1
+module load python/2.7.4
+module load py-scitools/2.7.4/impi-intel
+
+. /nopt/nrel/ecom/cid/virtipy/bin/activate
+
+export PYTHONPATH=$PYTHONPATH:/nopt/nrel/ecom/cid/pylada/5.0/pinstall/lib64/python2.7/site-packages
+
+
+
+
+
+echo ''
 echo config/mpi.py pbs_string: which python B: $(which python)
 
-export PYTHONPATH=/nopt/nrel/apps/epel/6.3/usr/lib/python2.6/site-packages:/nopt/nrel/ecom/cid/pylada/5.0/pinstall/lib64/python2.6/site-packages
+echo ''
+echo config/mpi.py pbs_string: module list:
+module list 2>&1
+
+echo ''
+echo config/mpi.py: PATH: $PATH
+
+echo ''
+echo config/mpi.py: PYTHONPATH: $PYTHONPATH
+
+echo ''
+echo config/mpi.py === begin printenv
+printenv
+echo config/mpi.py === end printenv
+
+echo ''
+echo config/mpi.py === begin sorted printenv
+printenv | sort
+echo config/mpi.py === end sorted printenv
+
+echo config/mpi.py === begin cat nodefile
+cat $PBS_NODEFILE
+echo config/mpi.py === end cat nodefile
 
 python -c 'import argparse'
 echo config/mpi.py pbs_string: after test argparse
@@ -264,9 +323,6 @@ echo config/mpi.py pbs_string: after test quantities
 
 python -c 'import mpi4py'
 echo config/mpi.py pbs_string: after test mpi4py
-
-export LD_LIBRARY_PATH=/nopt/intel/13.0/composer_xe_2013.3.163/mkl/lib/intel64/:/nopt/intel/13.0/impi/4.1.0.024/intel64/lib:/nopt/intel/13.0/composer_xe_2013.1.117/ipp/lib/intel64:/nopt/intel/13.0/composer_xe_2013.1.117/tbb/lib/intel64:/nopt/intel/13.0/composer_xe_2013.1.117/compiler/lib/intel64:/nopt/torque/lib
-
 
 
 {header}
@@ -293,17 +349,24 @@ comm = MPI.COMM_WORLD
 size = comm.Get_size()
 rank = comm.Get_rank()
 
-nm = gethostname()
-#fname = os.getenv("HOME") + "/temp.figure_out_machines.%03d" % (rank,)
-#fdebug = open( fname, "w")
-#print >> fdebug, \
-#  "config/mpi.py: figure_out_machines: size: %d  rank: %d  nm: %s" \
-#  % (size, rank, nm,)
 
-names = comm.gather( nm, root=0)
+hostname = gethostname()
+names = comm.gather( hostname, root=0)
 if rank == 0:
   for nm in names:
     print "PYLADA MACHINE HOSTNAME:", nm
-    #print >> fdebug, "config/mpi.py: figure_out_machines: nm: %s" % (nm,)
-#fdebug.close()
+
+bugLev = 1
+if bugLev >= 1:
+  fname = os.getenv("HOME") + "/temp.figure_out_machines.%03d" % (rank,)
+  fdebug = open( fname, "w")
+  print >> fdebug, \
+    "config/mpi.py: figure_out_machines: size: %d  rank: %d  hostname: %s" \
+    % (size, rank, hostname,)
+
+  if rank == 0:
+    for nm in names:
+      print >> fdebug, "config/mpi.py: figure_out_machines: nm: %s" % (nm,)
+  fdebug.close()
+
 '''

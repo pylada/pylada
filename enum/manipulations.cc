@@ -116,7 +116,7 @@ namespace Pylada
       _self->substitutions.clear();
 
       python::Object iterator = PyArray_IterNew((PyObject*)substitutions);
-      int const type_num = substitutions->descr->type_num;
+      int const type_num = PyArray_DESCR(substitutions)->type_num;
       _self->substitutions.resize(nd);
       std::vector< std::vector<t_ndim> >::iterator i_first = _self->substitutions.begin();
       while( PyArray_ITER_NOTDONE(iterator.borrowed()) )
@@ -162,17 +162,17 @@ namespace Pylada
 #     else
 #       define PYLADA_MACRO NPY_WRITEABLE
 #     endif
-      if(_self->arrayout->flags & PYLADA_MACRO) _self->arrayout->flags -= PYLADA_MACRO;
+      PyArray_CLEARFLAGS( _self->arrayout, PYLADA_MACRO);
 #     undef PYLADA_MACRO
 #     ifdef NPY_ARRAY_C_CONTIGUOUS
 #       define PYLADA_MACRO NPY_ARRAY_C_CONTIGUOUS
 #     else 
 #       define PYLADA_MACRO NPY_C_CONTIGUOUS
 #     endif
-      if(not (_self->arrayout->flags & PYLADA_MACRO)) _self->arrayout->flags += PYLADA_MACRO;
+      PyArray_ENABLEFLAGS( _self->arrayout, PYLADA_MACRO);
 #     undef PYLADA_MACRO
       Py_INCREF(_self);
-      _self->arrayout->base = (PyObject*)_self;
+      PyArray_SetBaseObject( _self->arrayout, (PyObject*)_self);
       return 0;
     }
 
@@ -189,20 +189,20 @@ namespace Pylada
                                 "yielded by an NDimIterator.");
         return NULL;
       }
-      if( ((PyArrayObject*)_in)->descr->type_num 
+      if( PyArray_DESCR((PyArrayObject*)_in)->type_num 
             != python::numpy::type<t_ndim>::value ) 
       {
         PYLADA_PYERROR(TypeError, "second argument should be a numpy array "
                                 "yielded by an NDimIterator.");
         return NULL;
       }
-      if(PyArray_NDIM(_in) != 1)
+      if(PyArray_NDIM((PyArrayObject*)_in) != 1)
       {
         PYLADA_PYERROR(TypeError, "second argument should be a numpy array "
                                 "with ndim == 1.");
         return NULL;
       }
-      if(PyArray_DIM(_in, 0) != _self->counter.size())
+      if(PyArray_DIM((PyArrayObject*)_in, 0) != _self->counter.size())
       {
         PYLADA_PYERROR(TypeError, "first argument should be a numpy array "
                                 "of length > 0.");
@@ -280,7 +280,7 @@ namespace Pylada
       std::vector<t_ndim>::iterator i_out = _self->counter.begin();
       std::vector<t_ndim>::iterator const i_end = _self->counter.end();
       std::vector<t_ndim>::iterator i_manip = _self->i_first->begin();
-      t_ndim * const i_data = (t_ndim*) PyArray_DATA(_self->arrayin); 
+      t_ndim * const i_data = (t_ndim*) PyArray_DATA((PyArrayObject *)_self->arrayin); 
       for(; i_out != i_end; ++i_out, ++i_manip)
         *i_out = *(i_data + *i_manip);
       Py_INCREF(_self->arrayout);

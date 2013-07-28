@@ -75,8 +75,10 @@ def launch(self, event, jobfolders):
       pbsargs['name'] = name if len(name)                                      \
                         else "{0}-root".format(basename(path))
       pbsargs['directory'] = directory
+      pbsargs['bugLev'] = bugLev
+      
       pbsargs['scriptcommand']                                                 \
-           = "{0} --nbprocs {n} --ppn {ppn} --jobid={1} {2}"                   \
+           = "{0} --bugLev {bugLev} --nbprocs {n} --ppn {ppn} --jobid={1} {2}"                   \
              .format(pyscript, name, path, **pbsargs)
       ppath = pbspaths(directory, name, 'script')
       print "launch/scattered: ppath: \"%s\"" % (ppath,)

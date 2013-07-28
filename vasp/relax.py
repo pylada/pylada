@@ -152,8 +152,9 @@ def iter_relax( vasp, structure, outdir=None, first_trial=None,
   from ..error import ExternalRunFailed
 
   if bugLev >= 5:
-    print "vasp/relax: iter_relax: vasp: %s  structure: %s  outdir: %s\n" \
-      % (vasp, structure, outdir,)
+    print "vasp/relax: iter_relax: vasp: %s" % (vasp,)
+    print "vasp/relax: iter_relax: structure: %s" % (structure,)
+    print "vasp/relax: iter_relax: outdir: %s" % (outdir,)
 
   # make this function stateless.
   vasp = deepcopy(vasp)
@@ -297,6 +298,11 @@ def iter_relax( vasp, structure, outdir=None, first_trial=None,
                    .format(structure, repr(structure).replace('\n', '\n            ')),
                    file.read() )
   with open(filename, 'w') as file: file.write(string)
+  if bugLev >= 1:
+    print 'vasp.iter_relax: filename: \"%s\"' % (filename,)
+    print 'vasp.iter_relax: ===== string start ====='
+    print string
+    print 'vasp.iter_relax: ===== string end ====='
 
   if output.success and (not keepsteps):
     rmtree(join(outdir, "cellshape"))

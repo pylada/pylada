@@ -45,7 +45,7 @@ vasp.lpead = False
 
 # See vasp/functional.py:  elementName, fileName, max or min oxidation state
 
-pseudoDir = "/nopt/nrel/ecom/cid/vasp.pseudopotentials.a"
+pseudoDir = "/nopt/nrel/ecom/cid/vasp.pseudopotentials.a/pseudos"
 
 vasp.add_specie = "Ag", pseudoDir + "/Ag", U("dudarev", "d", 5.0), 1 
 vasp.add_specie = "Al", pseudoDir + "/Al", None,  3

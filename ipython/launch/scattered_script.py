@@ -11,6 +11,9 @@ def main():
   # below would go additional imports.
 
   parser = ArgumentParser( prog="runone", description = re.sub("\\s+", " ", __doc__[1:]))
+
+  parser.add_argument('--bugLev', dest="bugLev", default=0, type=int,\
+                      help="Debug level.")
   parser.add_argument( "--jobid", dest="names", nargs='+', type=str, \
                        help="Job name", metavar="N" )
   parser.add_argument( "--ppath", dest="ppath", default=None, \
@@ -28,6 +31,10 @@ def main():
 
   try: options = parser.parse_args()
   except SystemExit: return
+
+  from pylada.misc import setBugLev
+  setBugLev( options.bugLev)         # set global debug level
+  from pylada.misc import bugLev     # must import after calling setBugLev
 
   # additional path to look into.
   if options.ppath is not None: python_path.append(options.ppath)
@@ -47,8 +54,22 @@ def main():
   print '  ipy/lau/scattered_script: jobfolder: ', jobfolder
   print '  ipy/lau/scattered_script: options: ', options
   for name in options.names:
-    print '  ipy/lau/scattered_script: before compute for name: ', name
+    if bugLev >= 1:
+      print '  ipy/lau/scattered_script: name: %s' % ( name,)
+      print '  ipy/lau/scattered_script: jobfolder[name]: %s' \
+        % ( jobfolder[name],)
+      print '  ipy/lau/scattered_script: type(jobfolder[name]): %s' \
+        % ( type(jobfolder[name]),)
+      print '  ipy/lau/scattered_script: jobfolder[name].compute: %s' \
+        % ( jobfolder[name].compute,)
+      print '  ipy/lau/scattered_script: type(jobfolder[name].compute): %s' \
+        % ( type(jobfolder[name].compute),)
+      print '  ipy/lau/scattered_script: before compute for name: %s' \
+        % ( name,)
+
     jobfolder[name].compute(comm=pylada.default_comm, outdir=name)
-    print '  ipy/lau/scattered_script: after compute for name: ', name
+    if bugLev >= 1:
+      print '  ipy/lau/scattered_script: after compute for name: %s' \
+        % ( name,)
 
 if __name__ == "__main__": main()

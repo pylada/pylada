@@ -14,9 +14,9 @@
       if(_parent != NULL) 
       {
         // For some reason, eigen is column major, whereas c++ is generally row major.
-        if(PyArray_FLAGS(result) & NPY_ARRAY_C_CONTIGUOUS and not _in.IsRowMajor) 
+        if(not _in.IsRowMajor) 
           PyArray_CLEARFLAGS(result, NPY_ARRAY_C_CONTIGUOUS);
-        else if((not (PyArray_FLAGS(result) & NPY_ARRAY_C_CONTIGUOUS)) and _in.IsRowMajor) 
+        else if( _in.IsRowMajor) 
           PyArray_ENABLEFLAGS(result, NPY_ARRAY_C_CONTIGUOUS);
         if(_in.cols() == 1)
           PyArray_STRIDES(result)[0] = _in.innerStride() * sizeof(typename t_ScalarType::np_type);
@@ -40,8 +40,7 @@
           for(int j(0); j < _in.cols(); ++j)
             *((typename t_ScalarType::np_type*) PyArray_GETPTR2(result, i, j)) = _in(i, j);
       }
-      if(PyArray_FLAGS(result) & NPY_ARRAY_WRITEABLE)
-        PyArray_CLEARFLAGS(result, NPY_ARRAY_WRITEABLE);
+      PyArray_CLEARFLAGS(result, NPY_ARRAY_WRITEABLE);
       return (PyObject*)result;
     }
   //! Convert/wrap a matrix to numpy.
@@ -60,7 +59,7 @@
         // For some reason, eigen is column major, whereas c++ is generally row major.
         if(PyArray_FLAGS(result) & NPY_ARRAY_C_CONTIGUOUS and not _in.IsRowMajor) 
           PyArray_CLEARFLAGS(result, NPY_ARRAY_C_CONTIGUOUS);
-        else if((not (PyArray_FLAGS(result) & NPY_ARRAY_C_CONTIGUOUS)) and _in.IsRowMajor) 
+        else if( _in.IsRowMajor) 
           PyArray_ENABLEFLAGS(result, NPY_ARRAY_C_CONTIGUOUS);
         if(_in.cols() == 1)
           PyArray_STRIDES(result)[0] = _in.innerStride() * sizeof(typename t_ScalarType::np_type);
@@ -84,8 +83,7 @@
           for(int j(0); j < _in.cols(); ++j)
             *((typename t_ScalarType::np_type*) PyArray_GETPTR2(result, i, j)) = _in(i, j);
       }
-      if(not (PyArray_FLAGS(result) & NPY_ARRAY_WRITEABLE))
-        PyArray_ENABLEFLAGS(result, NPY_ARRAY_WRITEABLE);
+      PyArray_ENABLEFLAGS(result, NPY_ARRAY_WRITEABLE);
       return (PyObject*)result;
     }
   //! Converts an input sequence to a cell.

@@ -27,10 +27,10 @@ def nonmagnetic_wave(path, inputpath="input.py", **kwargs):
   from pylada.vasp import read_input
   from pylada.jobfolder import JobFolder
   from pylada import interactive
-  from pylada.misc import bugLev
-  from pylada.misc import setBugLev
 
-  setBugLev(0)   # set global debug level
+  from pylada.misc import setBugLev
+  setBugLev(0)                       # set global debug level
+  from pylada.misc import bugLev     # must import after calling setBugLev
 
   # reads input.
   input = read_input(inputpath)

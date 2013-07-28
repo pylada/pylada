@@ -91,9 +91,12 @@ namespace Pylada
         npy_intp dims[1] = {3};
         translation = PyArray_SimpleNew(1, dims, nptype);
         if(not translation) return NULL;
-        *(t_type*)PyArray_GETPTR1(translation, 0) = -_data->translation[0];
-        *(t_type*)PyArray_GETPTR1(translation, 1) = -_data->translation[1];
-        *(t_type*)PyArray_GETPTR1(translation, 2) = -_data->translation[2];
+        *(t_type*)PyArray_GETPTR1( (PyArrayObject *) translation, 0)
+            = -_data->translation[0];
+        *(t_type*)PyArray_GETPTR1( (PyArrayObject *) translation, 1)
+            = -_data->translation[1];
+        *(t_type*)PyArray_GETPTR1( (PyArrayObject *) translation, 2)
+            = -_data->translation[2];
       }
       if(not translation) return NULL;
       Py_INCREF(isself? _data->b: _data->a);
