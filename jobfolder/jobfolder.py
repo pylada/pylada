@@ -63,8 +63,7 @@ class JobFolder(object):
         "Could not pickle functional. Caught Error:\n{0}".format(e))
 
     if bugLev >= 1:
-      print 'jobfolder.functional.setter: value: ', value
-      print 'jobfolder.functional.setter: string: ', string
+      print 'jobfolder.functional.setter for name: ', self.name
     try: self._functional = loads(string)
     except Exception as e:
       raise ValueError("Could not reload pickled functional. Caught Error:\n{0}".format(e))

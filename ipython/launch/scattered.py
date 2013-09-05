@@ -18,6 +18,7 @@ def launch(self, event, jobfolders):
   from . import get_walltime, get_mppalloc, get_queues, scattered_script
   from pylada.misc import bugLev
 
+  if bugLev >= 1: print "launch/scattered: event: %s" % (event,)
   shell = get_shell(self)
 
   pbsargs = deepcopy(dict(default_comm))
@@ -26,8 +27,13 @@ def launch(self, event, jobfolders):
 
   mppalloc = get_mppalloc(shell, event)
   if mppalloc is None: return
+
+  # Set pbsargs['walltime'] to a string like '03:59:59'
   if not get_walltime(shell, event, pbsargs): return
+
+  # Set pbsargs['queue'], pbsargs['account']
   if not get_queues(shell, event, pbsargs): return
+  if bugLev >= 1: print "launch/scattered: pbsargs: %s" % (pbsargs,)
  
 
   # gets python script to launch in pbs.

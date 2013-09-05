@@ -193,15 +193,19 @@ def set_queue_parser(parser):
   """ Adds default queue/account options. """
   from ... import queues, accounts, debug_queue
 
-  if len(accounts) != 0:
-    parser.add_argument( '--account',
-              dest="account", choices=accounts, default=accounts[0],
-              help="Account on which to launch job. Defaults to {0}."          \
-                   .format(accounts[0]) )
-  else:
-    parser.add_argument( '--account', dest="account", type=str,
-                         help="Launches jobs on specific "                     \
-                              "account if present." )
+  ###if len(accounts) != 0:
+  ###  parser.add_argument( '--account',
+  ###            dest="account", choices=accounts, default=accounts[0],
+  ###            help="Account on which to launch job. Defaults to {0}."
+  ###                 .format(accounts[0]) )
+  ###else:
+  ###  parser.add_argument( '--account', dest="account", type=str,
+  ###                       help="Launches jobs on specific "
+  ###                            "account if present." )
+  parser.add_argument(
+    '--account', dest='account', type=str,
+    help='Launches jobs on specific account if present.')
+
   if len(queues) != 0: 
     parser.add_argument( '--queue', dest="queue", choices=queues,
               default=queues[0],

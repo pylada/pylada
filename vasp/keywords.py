@@ -81,11 +81,16 @@ class Magmom(ValueKeyword):
     if all(not hasattr(u, 'magmom') for u in structure): return None
     result = ""
     for specie in specieset(structure):
+
+      # Example specie: Fe  moments: [-4.0, -4.0, -4.0, 4.0, -4.0, -4.0]
       moments = [getattr(u, 'magmom', 0e0) for u in structure if u.type == specie]
+      # Get tupled = [[3, -4.0], [1, 4.0], [2, -4.0]]
       tupled = [[1, moments[0]]]
       for m in moments[1:]: 
         if abs(m - tupled[-1][1]) < 1e-12: tupled[-1][0] += 1
         else: tupled.append([1, m])
+
+      # Create result = '3*-4.00 4.00 2*-4.00 '
       for i, m in tupled:
         if i == 1: result += "{0:.2f} ".format(m)
         else:      result += "{0}*{1:.2f} ".format(i, m)

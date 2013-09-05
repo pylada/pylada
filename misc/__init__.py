@@ -185,7 +185,9 @@ def exec_input( script, global_dict=None, local_dict=None,
   if local_dict is None: local_dict = {}
   # Executes input script.
   if bugLev >= 5:
-    print "misc/init: exec_input: script: =====\n%s=====" % (script,)
+    print 'misc/init: exec_input: ========== start script =========='
+    print script
+    print 'misc/init: exec_input: ========== end script =========='
   exec(script, global_dict, local_dict)
 
   # Makes sure expected paths are absolute.

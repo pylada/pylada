@@ -29,8 +29,8 @@ def nonmagnetic_wave(path, inputpath="input.py", **kwargs):
   from pylada import interactive
 
   from pylada.misc import setBugLev
-  setBugLev(0)                       # set global debug level
-  from pylada.misc import bugLev     # must import after calling setBugLev
+  setBugLev(0)   # set global debug level
+  from pylada.misc import bugLev
 
   # reads input.
   input = read_input(inputpath)
@@ -159,6 +159,12 @@ def nonmagnetic_wave(path, inputpath="input.py", **kwargs):
   InteractiveShell.instance().magic("savefolders " + path)
 
 
+
+
+
+
+
+
 def magnetic_wave( path=None, inputpath='input.py', **kwargs):
   """ Creates magnetic wave for current job-folder.
 
@@ -191,8 +197,11 @@ def magnetic_wave( path=None, inputpath='input.py', **kwargs):
   from pylada.vasp import read_input
   from pylada.jobfolder import JobFolder
   from pylada import interactive
-  from pylada.misc import bugLev
   import pickle, random
+
+  from pylada.misc import setBugLev
+  setBugLev(0)   # set global debug level
+  from pylada.misc import bugLev
 
   with open(path) as fin:
     jobfolder = pickle.load( fin)
@@ -256,9 +265,12 @@ def magnetic_wave( path=None, inputpath='input.py', **kwargs):
     for func, prefix in hnl: 
       if bugLev >= 1:
         print "test/hi/test.mag: func: %s  prefix: %s" % (func, prefix,)
-      # now tries and creates high-spin ferro folders if it does not already exist.
+      # Now tries and creates high-spin ferro folders
+      # if it does not already exist.
       jobname = normpath("{0}/{1}ferro".format(basename, prefix))
-      structure, magmom = ferro(extract.structure, extract.functional.species, func)
+      structure, magmom = ferro(
+        extract.structure, extract.functional.species, func)
+
       if bugLev >= 1:
         print "test/hi/test.mag: structure: %s" % (structure,)
         print "test/hi/test.mag: jobfolder: %s" % (jobfolder,)
@@ -272,7 +284,6 @@ def magnetic_wave( path=None, inputpath='input.py', **kwargs):
         if bugLev >= 1:
           print "test/hi/test.mag: structure.name: %s" % (structure.name,)
           print "test/hi/test.mag: job: %s" % (job,)
-        # Never executed:  xxx ? is too!
         job.functional = input.vasp
         job.params["structure"] = structure.copy()
         job.params["magmom"] = True
@@ -280,11 +291,14 @@ def magnetic_wave( path=None, inputpath='input.py', **kwargs):
         # saves some stuff for future reference.
         job.material = material
         job.lattice  = lattice
-        print "test/hi/test.mag: created jobname: %s" % (jobname,)
+        print "test/hi/test.mag: created ferro jobname: %s" % (jobname,)
         nb_new_folders += 1
 
-      # now tries and creates anti-ferro-lattices folders if it does not already exist.
-      structure, magmom = species_antiferro(extract.structure, extract.functional.species, func) 
+      # Now tries and creates anti-ferro-lattices folders
+      # if it does not already exist.
+      structure, magmom = species_antiferro(
+        extract.structure, extract.functional.species, func) 
+
       jobname = normpath("{0}/{1}anti-ferro-0".format(basename, prefix))
       if magmom and jobname not in jobfolder and input.do_antiferro:
         structure.name = "{0} in {1}, {2}specie-anti-ferro."\
@@ -298,31 +312,37 @@ def magnetic_wave( path=None, inputpath='input.py', **kwargs):
         # saves some stuff for future reference.
         job.material = material
         job.lattice  = lattice
-        print "test/hi/test.mag: created jobname: %s" % (jobname,)
+        print "test/hi/test.mag: created anti ferro jobname: %s" % (jobname,)
         nb_new_folders += 1
 
-      # random anti-ferro.
-      natom = len( extract.structure)
+      # Random anti-ferro, or all possible anti-ferro.
+      magIxs = []         # indices of magnetic atoms
+      for ii in range( len( extract.structure)):
+        atom = extract.structure[ii]
+        if len(deduce_moment(atom, extract.functional.species)) > 1:
+          magIxs.append( ii)
+      numMagAtom = len( magIxs)
 
-      # Total num tests = 2**natom, but each one is counted
+      # Total num tests = 2**numMagAtom, but each one is counted
       # twice, since ddd == uuu, and ddu == uud, etc.,
       # where d = spin down, u = spin up.
-      # So the num unique tests = 2**natom / 2
-      numUnique = 2 ** (natom - 1)
+      # So the num unique tests = 2**numMagAtom / 2
+      numUnique = 2 ** (numMagAtom - 1)
 
       # If the user asked for at least half the total num unique tests,
       # we may as well do them all
-      print "test.py: natom: %d  numUnique: %d  input.nbantiferro: %d" \
-        % ( natom, numUnique, input.nbantiferro,)
+      print "test.py: numMagAtom: %d  numUnique: %d  input.nbantiferro: %d" \
+        % ( numMagAtom, numUnique, input.nbantiferro,)
       if input.nbantiferro >= numUnique / 2:
         # Do all possible combinations
         print 'test.py: Do all possible antiferro combinations'
         for itest in range( numUnique):
-          runAntiFerroTest(
+          jobname = runAntiFerroTest(
             bugLev, jobfolder, material, lattice,
-            inputpath, input,
-            extract, basename, prefix, itest, itest)
-          print "test/hi/test.mag: created jobname: %s" % (jobname,)
+            inputpath, input, magIxs,
+            extract, basename, func, prefix, itest, itest)
+          print "test/hi/test.mag: created all anti ferro jobname: %s" \
+            % (jobname,)
           nb_new_folders += 1
 
       else:
@@ -334,11 +354,12 @@ def magnetic_wave( path=None, inputpath='input.py', **kwargs):
           itest = random.randint( 0, numUnique - 1)
           if itest not in doneMap:
             doneMap[itest] = True
-            runAntiFerroTest(
+            jobname = runAntiFerroTest(
               bugLev, jobfolder, material, lattice,
-              inputpath, input,
-              extract, basename, prefix, ix, itest)
-            print "test/hi/test.mag: created jobname: %s" % (jobname,)
+              inputpath, input, magIxs,
+              extract, basename, func, prefix, ix, itest)
+            print "test/hi/test.mag: created random anti ferro jobname: %s" \
+              % (jobname,)
             nb_new_folders += 1
             ix += 1
             if ix >= input.nbantiferro: break
@@ -348,6 +369,12 @@ def magnetic_wave( path=None, inputpath='input.py', **kwargs):
   if nb_new_folders == 0: return
   interactive.jobfolder = jobfolder.root
   InteractiveShell.instance().magic("savefolders " + path)
+
+
+
+
+
+
 
 def is_magnetic_system(structure, species):
   """ True if system is magnetic. """
@@ -378,11 +405,15 @@ def is_magnetic_system(structure, species):
     
   return False
 
+
+
 def has_high_and_low(structure, species):
   """ True if some species have both high and low spins. """
   for atom in structure:
     if len(deduce_moment(atom, species)) > 1: return True
   return False
+
+
 
 def deduce_moment(atom, species):
   """ Returns moment.
@@ -397,11 +428,15 @@ def deduce_moment(atom, species):
     return [species[atom.type].moment]
   return species[atom.type].moment
 
+
+
 def ferro(structure, species, func=min):
   """ Returns magmom VASP flag for low-spin ferromagnetic order. """
   result = structure.copy()
   for atom in result: atom.magmom = func(deduce_moment(atom, species))
   return result, True
+
+
 
 def species_antiferro(structure, species, func=min):
   """ Low spin anti ferro order with each cation specie in a different direction. """
@@ -429,31 +464,48 @@ def species_antiferro(structure, species, func=min):
 
 
 
+
+
 # Given itest use it's binary representation to set the spins.
-# For example if natom = 4 and itest = 5,
+# For example if numMagAtom = 4 and itest = 5,
 # we set the spins to 0101.
+# Returns jobname.
+
 def runAntiFerroTest(
   bugLev, jobfolder, material, lattice,
-  inputpath, input,
-  extract, basename, prefix, ix, itest):
+  inputpath, input, magIxs,
+  extract, basename, func, prefix, ix, itest):
 
   from os.path import normpath
 
   structure = extract.structure.copy()
-  natom = len( extract.structure)
+  numMagAtom = len( magIxs)
   if bugLev >= 1:
-    print "runAntiFerroTest: material: %s  natom: %d  ix: %d  itest: %d" \
-      % (material, natom, ix, itest,)
-
-  itmp = itest
-  for ii in range( natom):
-    spin = -1.
-    if itmp % 2 == 1: spin = 1.
-    atom = structure[natom-1-ii]
-    atom.magmom = spin * min( deduce_moment(atom, extract.functional.species))
+    print 'runAntiFerroTest: material: %s  ix: %d  itest: %d' \
+      % (material, ix, itest,)
+    print 'runAntiFerroTest: numMagAtom: %d  magIxs: %s' \
+      % (numMagAtom, magIxs,)
 
   jobname = normpath("{0}/{1}anti-ferro-{2}".format(
     basename, prefix, ix))
+
+  # Shift the bits in itest right, examining the low order bit,
+  # and make corresponding array: spins[], having elements -1 and 1.
+  spins = numMagAtom * [0]
+  itmp = itest
+  for ii in range( numMagAtom):
+    spin = -1.
+    if itmp % 2 == 1: spin = 1.
+    spins[ii] = spin
+    itmp >>= 1
+
+  # Copy the moments[] array into the magnetic atoms.
+  for ii in range( numMagAtom):
+    spin = spins[ii]
+    atom = structure[ magIxs[ii]]
+    atom.magmom \
+      = spin * func( deduce_moment( atom, extract.functional.species))
+
   if jobname not in jobfolder:
     structure.name = "{0} in {1}, random anti-ferro.".format(
       material, lattice.name)
@@ -466,4 +518,6 @@ def runAntiFerroTest(
     # saves some stuff for future reference.
     job.material = material
     job.lattice  = lattice
+
+  return jobname
 

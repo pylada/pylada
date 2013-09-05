@@ -191,7 +191,8 @@ queues = ()
     It is not required for slurm systems. 
     If empty, then %launch will not have a queue option.
 """
-accounts = ['CSC000', 'BES000']   # was: ['BES000']
+###accounts = ['CSC000', 'BES000']
+accounts = ['']
 """ List of slurm or pbs accounts allowed for use. 
 
     This is used by ipython's %launch magic function. 
@@ -226,8 +227,14 @@ qsub_array_exe = None
 qdel_exe = 'mjobctl -c'
 """ Qdel/scancel executable. """
 
-default_pbs = { 'account': accounts[0], 'walltime': "00:30:00", 'nnodes': 1,
-                'ppn': 1, 'header': "", 'footer': "" }
+default_pbs = {
+  ###'account': accounts[0],
+  'walltime': "00:30:00",
+  'nnodes': 1,
+  'ppn': 1,
+  'header': '',
+  'footer': ''
+}
 """ Defaults parameters filling the pbs script. """
 
 #pbs_string =  '''#!/bin/bash
@@ -253,6 +260,7 @@ default_pbs = { 'account': accounts[0], 'walltime': "00:30:00", 'nnodes': 1,
 pbs_string =  '''#!/bin/bash
 #PBS -A {account}
 #PBS -q batch
+#PBS -m n
 #PBS -l walltime={walltime}
 #PBS -l nodes={nnodes}
 #PBS -e {err}
@@ -356,8 +364,8 @@ if rank == 0:
   for nm in names:
     print "PYLADA MACHINE HOSTNAME:", nm
 
-bugLev = 1
-if bugLev >= 1:
+bugLev = 0
+if bugLev >= 5:
   fname = os.getenv("HOME") + "/temp.figure_out_machines.%03d" % (rank,)
   fdebug = open( fname, "w")
   print >> fdebug, \
