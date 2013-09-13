@@ -1,3 +1,4 @@
+import os.path
 from glob import iglob
 from pylada.crystal.read import icsd_cif_a
 from pylada.crystal.read import icsd_cif_b
@@ -9,6 +10,8 @@ if bugLev >= 1: print "test/hi/inputCif: entry"
 vasp = Relax()
 if bugLev >= 1:
   print "test/hi/inputCif: === vasp ===\n%s\n=== end vasp ===" % (vasp,)
+
+vasp.program = os.path.expanduser('~/pyladaExec.sh')   # default vasp program
 
 vasp.prec       = "accurate"
 vasp.ediff      = 6.0e-5        # total, not per atom
@@ -25,11 +28,11 @@ vasp.relaxation = "ionic"
 vasp.set_symmetries = "off"
 vasp.kpoints        = "\n0\nAuto\n20"
 vasp.lorbit         = 10
-vasp.add_param      = "lmaxmix",4
+###vasp.add_param      = "lmaxmix",4
+vasp.lmaxmix = 4
 
 vasp.lcharg = True
 vasp.lwave = True
-vasp.lmaxmix = 4
 vasp.loptics = False
 vasp.lpead = False
 

@@ -907,7 +907,7 @@ class Vasp(AttrBlock):
             This will never overwrite successfull VASP calculation, even if the
             parameters to the call are different.
     """ 
-    from .. import vasp_program
+    ###from .. import vasp_program
     from ..process.program import ProgramProcess
     from .extract import Extract as ExtractVasp
 
@@ -924,8 +924,13 @@ class Vasp(AttrBlock):
     
     # copies/creates file environment for calculation.
     self.bringup(structure, outdir, comm=comm, overwrite=overwrite)
+
     # figures out what program to call.
-    program = self.program if self.program is not None else vasp_program
+    ###program = self.program if self.program is not None else vasp_program
+    program = getattr( self, 'program', None)
+    if program == None:
+      raise RuntimeError('program was not set in the vasp functional')
+
     if hasattr(program, '__call__'): program = program(self, structure, comm)
     # creates a process with a callback to bring-down environment once it is
     # done.

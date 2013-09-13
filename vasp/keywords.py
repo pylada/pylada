@@ -828,7 +828,11 @@ class LDAU(BoolKeyword):
   def output_map(self, **kwargs):
     from ..crystal import specieset
     from ..error import ValueError, ConfigError, internal
-    from .. import vasp_has_nlep
+    ###from .. import vasp_has_nlep
+    vasp = kwargs['vasp']
+    has_nlep = getattr( vasp, 'has_nlep', False)
+    print '############################## LDAU: has_nlep: %s' % (has_nlep,)
+
     #print "vasp/keywords: LDAU.output: keyword: %s  value: %s" \
     #  % (self.keyword, self.value,)
     if self.value is None or self.value is False: return
@@ -843,11 +847,11 @@ class LDAU(BoolKeyword):
         raise ValueError("More than 4 channels for U/NLEP parameters")
       has_U = True
       # check whether running NLEP without NLEP VASP.
-      if not vasp_has_nlep:
+      if not has_nlep:
         if len(specie.U) > 1:
-          raise ValueError('vasp_has_nlep is False. There can be only U parameter')
+          raise ValueError('has_nlep is False. There can be only U parameter')
         if specie.U[0]['func'] != 'U': 
-          raise ConfigError('vasp_has_nlep is False. Cannot use NLEP.')
+          raise ConfigError('has_nlep is False. Cannot use NLEP.')
       # checks consistency.
       which_type = specie.U[0]["type"]
       for l in specie.U[1:]: 
@@ -861,7 +865,7 @@ class LDAU(BoolKeyword):
     result['LDAUTYPE'] = str(which_type)
 
     # U and NLEP themselves.
-    if vasp_has_nlep: 
+    if has_nlep: 
       for i in range( max(len(species[type].U) for type in types) ):
         ldul, lduu, lduj, lduo = [], [], [], []
         for type in types:

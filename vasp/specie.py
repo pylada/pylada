@@ -74,13 +74,14 @@ def nlep(type = 1, l=2, U0=0e0, U1=None, fitU0=False, fitU1=False,
       .. _[*]: `PRB **77**, 241201(R) (2008). <NLEP_>`
       .. _NLEP: http://dx.doi.org/10.1103/PhysRevB.77.241201
   """
-  from .. import vasp_has_nlep
+  ###from .. import vasp_has_nlep
   from ..error import ConfigError
-  if not vasp_has_nlep: 
-    raise ConfigError( 'vasp_has_nlep is False. Cannot use NLEP.\n'            \
-                       'If you have VASP compiled for NLEP, '                  \
-                       'please vasp_has_nlep to True in your '                 \
-                       'pylada configuration file.\n' )
+  ###if not vasp_has_nlep: 
+  ###  raise ConfigError(
+  ###    'vasp_has_nlep is False. Cannot use NLEP.\n'
+  ###    'If you have VASP compiled for NLEP, '
+  ###    'please vasp_has_nlep to True in your '
+  ###    'pylada configuration file.\n' )
   if hasattr(type, "lower"):
     type = type.lower()
     if type == "liechtenstein": type = 1
