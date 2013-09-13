@@ -1,3 +1,25 @@
+/******************************
+   This file is part of PyLaDa.
+
+   Copyright (C) 2013 National Renewable Energy Lab
+  
+   PyLaDa is a high throughput computational platform for Physics. It aims to make it easier to submit
+   large numbers of jobs on supercomputers. It provides a python interface to physical input, such as
+   crystal structures, as well as to a number of DFT (VASP, CRYSTAL) and atomic potential programs. It
+   is able to organise and launch computational jobs on PBS and SLURM.
+  
+   PyLaDa is free software: you can redistribute it and/or modify it under the terms of the GNU General
+   Public License as published by the Free Software Foundation, either version 3 of the License, or (at
+   your option) any later version.
+  
+   PyLaDa is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+   the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+   Public License for more details.
+  
+   You should have received a copy of the GNU General Public License along with PyLaDa.  If not, see
+   <http://www.gnu.org/licenses/>.
+******************************/
+
 #include "PyladaConfig.h"
 
 #include <Python.h>
@@ -113,25 +135,10 @@ namespace Pylada
       _self->yielded = (PyArrayObject*)
           PyArray_SimpleNewFromData(1, d, t_type::value, &_self->counter[0]);
       if(not _self->yielded) return -1;
-#     ifdef PYLADA_MACRO
-#       error PYLADA_MACRO already defined
-#     endif
-#     ifdef NPY_ARRAY_WRITEABLE
-#       define PYLADA_MACRO NPY_ARRAY_WRITEABLE
-#     else
-#       define PYLADA_MACRO NPY_WRITEABLE
-#     endif
-      PyArray_CLEARFLAGS( _self->yielded, PYLADA_MACRO);
-#     undef PYLADA_MACRO
-#     ifdef NPY_ARRAY_C_CONTIGUOUS
-#       define PYLADA_MACRO NPY_ARRAY_C_CONTIGUOUS
-#     else 
-#       define PYLADA_MACRO NPY_C_CONTIGUOUS
-#     endif
-      PyArray_ENABLEFLAGS( _self->yielded, PYLADA_MACRO);
-#     undef PYLADA_MACRO
-      PyArray_SetBaseObject( _self->yielded, (PyObject*)_self);
+      PyArray_CLEARFLAGS(_self->yielded,  NPY_ARRAY_WRITEABLE);
+      PyArray_ENABLEFLAGS(_self->yielded,  NPY_ARRAY_C_CONTIGUOUS);
       Py_INCREF(_self);
+      PyArray_SetBaseObject(_self->yielded, (PyObject*)_self);
       return 0;
     }
   
@@ -158,7 +165,7 @@ namespace Pylada
             PYLADA_PYERROR(internal, "Yielded was not initialized.");
             return NULL;
           }
-          if(_self->yielded->data != (char*)&_self->counter[0])
+          if(PyArray_DATA(_self->yielded) != (void*)&_self->counter[0])
           {
             PYLADA_PYERROR(internal, "Yielded does not reference counter.");
             return NULL;
@@ -223,7 +230,7 @@ namespace Pylada
           PYLADA_PYERROR(internal, "Yielded was not initialized.");
           return NULL;
         }
-        if(_self->yielded->data != (char*)&_self->counter[0])
+        if(PyArray_DATA(_self->yielded) != (void*)&_self->counter[0])
         {
           PYLADA_PYERROR(internal, "Yielded does not reference counter.");
           return NULL;

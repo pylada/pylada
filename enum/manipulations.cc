@@ -1,3 +1,25 @@
+/******************************
+   This file is part of PyLaDa.
+
+   Copyright (C) 2013 National Renewable Energy Lab
+  
+   PyLaDa is a high throughput computational platform for Physics. It aims to make it easier to submit
+   large numbers of jobs on supercomputers. It provides a python interface to physical input, such as
+   crystal structures, as well as to a number of DFT (VASP, CRYSTAL) and atomic potential programs. It
+   is able to organise and launch computational jobs on PBS and SLURM.
+  
+   PyLaDa is free software: you can redistribute it and/or modify it under the terms of the GNU General
+   Public License as published by the Free Software Foundation, either version 3 of the License, or (at
+   your option) any later version.
+  
+   PyLaDa is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+   the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+   Public License for more details.
+  
+   You should have received a copy of the GNU General Public License along with PyLaDa.  If not, see
+   <http://www.gnu.org/licenses/>.
+******************************/
+
 #include "PyladaConfig.h"
 
 #include <Python.h>
@@ -116,7 +138,7 @@ namespace Pylada
       _self->substitutions.clear();
 
       python::Object iterator = PyArray_IterNew((PyObject*)substitutions);
-      int const type_num = PyArray_DESCR(substitutions)->type_num;
+      int const type_num = PyArray_TYPE(substitutions);
       _self->substitutions.resize(nd);
       std::vector< std::vector<t_ndim> >::iterator i_first = _self->substitutions.begin();
       while( PyArray_ITER_NOTDONE(iterator.borrowed()) )
@@ -154,25 +176,11 @@ namespace Pylada
       _self->arrayout = (PyArrayObject*)
           PyArray_SimpleNewFromData(1, d, t_type::value, &_self->counter[0]);
       if(not _self->arrayout) return -1;
-#     ifdef PYLADA_MACRO
-#       error PYLADA_MACRO already defined
-#     endif
-#     ifdef NPY_ARRAY_WRITEABLE
-#       define PYLADA_MACRO NPY_ARRAY_WRITEABLE
-#     else
-#       define PYLADA_MACRO NPY_WRITEABLE
-#     endif
-      PyArray_CLEARFLAGS( _self->arrayout, PYLADA_MACRO);
-#     undef PYLADA_MACRO
-#     ifdef NPY_ARRAY_C_CONTIGUOUS
-#       define PYLADA_MACRO NPY_ARRAY_C_CONTIGUOUS
-#     else 
-#       define PYLADA_MACRO NPY_C_CONTIGUOUS
-#     endif
-      PyArray_ENABLEFLAGS( _self->arrayout, PYLADA_MACRO);
-#     undef PYLADA_MACRO
+
+      PyArray_CLEARFLAGS(_self->arrayout,  NPY_ARRAY_WRITEABLE);
+      PyArray_ENABLEFLAGS(_self->arrayout,  NPY_ARRAY_C_CONTIGUOUS);
       Py_INCREF(_self);
-      PyArray_SetBaseObject( _self->arrayout, (PyObject*)_self);
+      PyArray_SetBaseObject(_self->arrayout, (PyObject*)_self);
       return 0;
     }
 
@@ -189,8 +197,7 @@ namespace Pylada
                                 "yielded by an NDimIterator.");
         return NULL;
       }
-      if( PyArray_DESCR((PyArrayObject*)_in)->type_num 
-            != python::numpy::type<t_ndim>::value ) 
+      if( PyArray_TYPE((PyArrayObject*)_in) != python::numpy::type<t_ndim>::value ) 
       {
         PYLADA_PYERROR(TypeError, "second argument should be a numpy array "
                                 "yielded by an NDimIterator.");
@@ -209,19 +216,13 @@ namespace Pylada
         return NULL;
       }
 #     ifdef PYLADA_DEBUG
-#       ifdef NPY_ARRAY_C_CONTIGUOUS
-#         define PYLADA_MACRO NPY_ARRAY_C_CONTIGUOUS;
-#       else 
-#         define PYLADA_MACRO NPY_C_CONTIGUOUS
-#       endif
-        if(not (((PyArrayObject*)_in)->flags && NPY_C_CONTIGUOUS) )
+        if(not (PyArray_FLAGS((PyArrayObject*)_in) && NPY_ARRAY_C_CONTIGUOUS) )
         {
           PYLADA_PYERROR( TypeError, 
                         "second argument should be a c-contiguous numpy array." );
           return NULL;
         }
-#       undef PYLADA_MACRO
-        if(PyArray_STRIDE(_in, 0) != sizeof(t_ndim) / sizeof(char))
+        if(PyArray_STRIDE((PyArrayObject*)_in, 0) != sizeof(t_ndim) / sizeof(char))
         {
           PYLADA_PYERROR(TypeError, "Wrong stride for first argument.");
           return NULL;

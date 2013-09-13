@@ -1,8 +1,30 @@
+###############################
+#  This file is part of PyLaDa.
+#
+#  Copyright (C) 2013 National Renewable Energy Lab
+# 
+#  PyLaDa is a high throughput computational platform for Physics. It aims to make it easier to submit
+#  large numbers of jobs on supercomputers. It provides a python interface to physical input, such as
+#  crystal structures, as well as to a number of DFT (VASP, CRYSTAL) and atomic potential programs. It
+#  is able to organise and launch computational jobs on PBS and SLURM.
+# 
+#  PyLaDa is free software: you can redistribute it and/or modify it under the terms of the GNU General
+#  Public License as published by the Free Software Foundation, either version 3 of the License, or (at
+#  your option) any later version.
+# 
+#  PyLaDa is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+#  the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+#  Public License for more details.
+# 
+#  You should have received a copy of the GNU General Public License along with PyLaDa.  If not, see
+#  <http://www.gnu.org/licenses/>.
+###############################
+
 def test_istart():
   from time import sleep
   from collections import namedtuple
   from pickle import loads, dumps
-  from os import remove
+  from os import remove, makedirs
   from os.path import join, exists
   from shutil import rmtree
   from tempfile import mkdtemp
@@ -16,6 +38,9 @@ def test_istart():
   d = {'IStart': o.__class__}
 
   directory = mkdtemp()
+  if directory in ['/tmp/test', '/tmp/test/']:
+    if exists(directory): rmtree(directory)
+    makedirs(directory)
   try: 
     assert a.istart == 'auto'
     assert o.output_map(vasp=a, outdir=directory)['istart'] == '0'
@@ -47,8 +72,10 @@ def test_istart():
     with open(join(restartdir, WAVECAR), 'w') as file: 
       file.write('hello')
       file.flush()
-    sleep(0.5)
+    with open(join(restartdir, WAVECAR), 'r') as file: pass
+    sleep(1.5)
     with open(join(directory, WAVECAR), 'w') as file: file.write('hello world')
+    with open(join(directory, WAVECAR), 'r') as file: pass
     assert o.output_map(vasp=a, outdir=directory)['istart'] == '1'
     assert exists(join(directory, 'WAVECAR'))
     with open(join(directory, WAVECAR), 'r') as file: 
@@ -69,14 +96,16 @@ def test_istart():
     assert eval(repr(o), d).value == 'scratch'
     assert loads(dumps(o)).value == 'scratch'
 
-  finally: rmtree(directory)
+  finally: 
+    if directory not in ['/tmp/test', '/tmp/test/'] and exists(directory):
+      rmtree(directory)
 
 
 def test_icharg(): 
   from time import sleep
   from collections import namedtuple
   from pickle import loads, dumps
-  from os import remove
+  from os import remove, makedirs
   from os.path import join, exists
   from shutil import rmtree
   from tempfile import mkdtemp
@@ -91,6 +120,9 @@ def test_icharg():
   d = {'ICharg': o.__class__}
 
   directory = mkdtemp()
+  if directory in ['/tmp/test', '/tmp/test/']:
+    if exists(directory): rmtree(directory)
+    makedirs(directory)
   try: 
     assert a.icharg == 'auto'
     assert o.output_map(vasp=a, outdir=directory)['icharg'] == '2'
@@ -149,8 +181,9 @@ def test_icharg():
     # now check that latest is copied
     remove(join(restartdir, CHGCAR))
     remove(join(directory, CHGCAR))
-    sleep(0.2)
+    sleep(1.2)
     with open(join(directory, WAVECAR), 'w') as file: file.write('hello world')
+    with open(join(directory, WAVECAR), 'r') as file: pass # Buffering issues..
     a.nonscf = False
     a.restart = Extract(restartdir, True)
     assert o.output_map(vasp=a, outdir=directory)['icharg'] == '0'
@@ -184,7 +217,9 @@ def test_icharg():
     assert eval(repr(o), d).value == 'chgcar'
     assert loads(dumps(o)).value == 'chgcar'
 
-  finally: rmtree(directory)
+  finally: 
+    if directory not in ['/tmp/test', '/tmp/test/'] and exists(directory):
+      rmtree(directory)
 
 def test_istruc():
   from collections import namedtuple
