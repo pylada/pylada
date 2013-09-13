@@ -2,6 +2,7 @@
 def create_initstring(classname, base, method, excludes):
   """ Creates a string defining the __init__ method. """
   from inspect import getargspec
+  from pylada.misc import bugLev
 
   # creates line:  def __init__(self, ...):
   # keywords are deduced from arguments with defaults.
@@ -71,11 +72,27 @@ def create_initstring(classname, base, method, excludes):
                 "      if key not in avoid and key not in kwargs:\n"    \
                 "         setattr(self, key, deepcopy(value))\n"        \
                 .format(avoid)
+  if bugLev >= 1:
+    print 'tools/makeclass: create_initstring: classname: \"%s\"' \
+      % (classname,)
+    print 'tools/makeclass: create_initstring: method.__module__: \"%s\"' \
+      % (method.__module__,)
+    print 'tools/makeclass: create_initstring: method.func_name: \"%s\"' \
+      % (method.func_name,)
+    print 'tools/makeclass: create_initstring: base.__name__: \"%s\"' \
+      % (base.__name__,)
+    print 'tools/makeclass: create_initstring: ===== result start ====='
+    print result
+    print 'tools/makeclass: create_initstring: ===== result end ====='
+
   return result
+
 
 def create_iter(iter, excludes):
   """ Creates the iterator method. """
   from inspect import getargspec
+  from pylada.misc import bugLev
+
   # make stateless.
   result = "from pylada.tools import stateless, assign_attributes\n"\
            "@assign_attributes(ignore=['overwrite'])\n@stateless\n"
@@ -127,11 +144,18 @@ def create_iter(iter, excludes):
   if args.keywords is not None: result += ", **kwargs"
   result += "): yield o\n"
  
+  if bugLev >= 1:
+    print 'tools/makeclass: create_iter: ===== result start ====='
+    print result
+    print 'tools/makeclass: create_iter: ===== result end ====='
   return result
+
 
 def create_call_from_iter(iter, excludes):
   """ Creates a call method relying on existence of iter method. """
   from inspect import getargspec
+  from pylada.misc import bugLev
+
   # creates line:  def call(self, ...):
   # keywords are deduced from arguments with defaults.
   # others will not be added.
@@ -192,11 +216,18 @@ def create_call_from_iter(iter, excludes):
             "    program.start(comm)\n"                                        \
             "    program.wait()\n"                                             \
             "  return result".format(', '.join(iterargs))
+  if bugLev >= 1:
+    print 'tools/makeclass: create_call_from_iter: ===== result start ====='
+    print result
+    print 'tools/makeclass: create_call_from_iter: ===== result end ====='
   return result
+
 
 def create_call(call, excludes):
   """ Creates the call method. """
   from inspect import getargspec
+  from pylada.misc import bugLev
+
   # make stateless.
   result = "from pylada.tools import stateless, assign_attributes\n"\
            "@assign_attributes(ignore=['overwrite'])\n@stateless\n"
@@ -248,7 +279,12 @@ def create_call(call, excludes):
   if args.keywords is not None: result += ", **kwargs"
   result += ")\n"
  
+  if bugLev >= 1:
+    print 'tools/makeclass: create_call: ===== result start ====='
+    print result
+    print 'tools/makeclass: create_call: ===== result end ====='
   return result
+
 
 def makeclass( classname, base, iter=None, call=None,
                doc=None, excludes=None, module=None ):
@@ -295,6 +331,8 @@ def makeclass( classname, base, iter=None, call=None,
         given on input. Furthermore it contains an `Extract` class-attribute
         coming from either ``iter``, ``call``, ``base``, in that order.
   """
+  from pylada.misc import bugLev
+
   basemethod = iter if iter is not None else call
   if basemethod is None:
     raise ValueError('One of iter or call should not be None.')
@@ -321,11 +359,19 @@ def makeclass( classname, base, iter=None, call=None,
   elif hasattr(call, 'Extract'): d['Extract'] = call.Extract
   elif hasattr(base, 'Extract'): d['Extract'] = base.Extract
   if module is not None: d['__module__'] = module
+  if bugLev >= 1:
+    print 'tools/makeclass: makeclass: classname: \"%s\"' % (classname,)
+    print 'tools/makeclass: makeclass: base: \"%s\"' % (base,)
+    print 'tools/makeclass: makeclass: d: \"%s\"' % (d,)
   return type(classname, (base,), d)
+
+
 
 def makefunc(name, iter, module=None):
   """ Creates function from iterable. """
   from inspect import getargspec
+  from pylada.misc import bugLev
+
   # creates header line of function calls.
   # keywords are deduced from arguments with defaults.
   # others will not be added.
@@ -384,5 +430,8 @@ def makefunc(name, iter, module=None):
   funcs = {}
   exec funcstring in funcs
   if module is not None:  funcs[name].__module__ = module
+  if bugLev >= 1:
+    print 'tools/makeclass: makefunc: name: \"%s\"' % (name,)
+    print 'tools/makeclass: makefunc: funcs[name]: \"%s\"' % (funcs[name],)
   return funcs[name]
 

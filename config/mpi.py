@@ -40,8 +40,15 @@ def machine_dependent_call_modifier(formatter=None, comm=None, env=None):
 
       :return: ignored
   """
+  from pylada.misc import bugLev
   if len(getattr(comm, 'machines', [])) != 0:
-    formatter['placement'] = "-machinefile {0}".format(comm.nodefile())
+    nfile = comm.nodefile()
+    formatter['placement'] = "-machinefile {0}".format( nfile)
+    if bugLev >= 5:
+      print "config/mpi: machine_dep_call_mod: nodefile: \"%s\"" % (nfile,)
+      with open( nfile) as fin:
+        print "config/mpi: machine_dep_call_mod: nodefile contents: \"%s\"" \
+          %(fin.read(),)
 
 def modify_global_comm(communicator):
   """ Modifies global communicator so placement can be done correctly. 
@@ -140,15 +147,28 @@ def launch_program( cmdl, comm=None, formatter=None, env=None,
 
   # Split command from string to list
   if bugLev >= 1:
-    print "config/mpi: launch_program: final cmdl: \"%s\"" % (cmdl,)
+    print "config/mpi: launch_program: final full cmdl: \"%s\"" % (cmdl,)
   cmdl = shlex_split(cmdl)
+  if bugLev >= 1:
+    print "config/mpi: launch_program: final split cmdl: %s" % (cmdl,)
+    print "config/mpi: launch_program: final stdout: %s" % (stdout,)
+    print "config/mpi: launch_program: final stderr: %s" % (stderr,)
+    print "config/mpi: launch_program: final stdin: %s" % (stdin,)
+    print "config/mpi: launch_program: final outdir: \"%s\"" % (outdir,)
+    print "config/mpi: launch_program: final env: %s" % (env,)
 
   # makes sure the directory exists:
   if outdir is not None:
     with Changedir(outdir) as cwd: pass
-  # finally, start process.
-  return Popen( cmdl, stdout=stdout, stderr=stderr, stdin=stdin, cwd=outdir,
-                env=env )
+
+  # Finally, start the process.
+  popen = Popen( cmdl, stdout=stdout, stderr=stderr, stdin=stdin,
+    cwd=outdir, env=env )
+  if bugLev >= 1:
+    print "config/mpi: launch_program: popen: %s" % (popen,)
+    print "config/mpi: launch_program: popen.pid: %s" % (popen.pid,)
+
+  return popen
 
 
 
@@ -171,7 +191,8 @@ queues = ()
     It is not required for slurm systems. 
     If empty, then %launch will not have a queue option.
 """
-accounts = ['CSC000', 'BES000']   # was: ['BES000']
+###accounts = ['CSC000', 'BES000']
+accounts = ['']
 """ List of slurm or pbs accounts allowed for use. 
 
     This is used by ipython's %launch magic function. 
@@ -185,7 +206,10 @@ debug_queue = "queue", "debug"
     First part of the tuple is the keyword argument to modify when calling
     the pbs job, and the second is its value.
 """
-qsub_exe = "sbatch"
+
+
+# qsub_exe = "sbatch"
+qsub_exe = "msub"
 """ Qsub/sbatch executable. """
 qsub_array_exe = None
 """ Qsub for job arrays.
@@ -197,24 +221,117 @@ qsub_array_exe = None
 
     The format ``{array}`` will receive the arrays to launch.
 """
-qdel_exe = 'scancel'
+
+
+# qdel_exe = 'scancel'
+qdel_exe = 'mjobctl -c'
 """ Qdel/scancel executable. """
 
-default_pbs = { 'account': accounts[0], 'walltime': "00:30:00", 'nnodes': 1,
-                'ppn': 1, 'header': "", 'footer': "" }
+default_pbs = {
+  ###'account': accounts[0],
+  'walltime': "00:30:00",
+  'nnodes': 1,
+  'ppn': 1,
+  'header': '',
+  'footer': ''
+}
 """ Defaults parameters filling the pbs script. """
+
+#pbs_string =  '''#!/bin/bash
+##SBATCH --account={account}
+##SBATCH --time={walltime}
+##SBATCH -N {nnodes}
+##SBATCH -e {err}
+##SBATCH -o {out}
+##SBATCH -J {name}
+##SBATCH -D {directory}
+#
+#echo config/mpi.py pbs_string: header: {header}
+#echo config/mpi.py pbs_string: scriptcommand: python {scriptcommand}
+#echo config/mpi.py pbs_string: footer: {footer}
+#
+#{header}
+#python {scriptcommand}
+#{footer}
+#
+#'''
+
+
 pbs_string =  '''#!/bin/bash
-#SBATCH --account={account}
-#SBATCH --time={walltime}
-#SBATCH -N {nnodes}
-#SBATCH -e {err}
-#SBATCH -o {out}
-#SBATCH -J {name}
-#SBATCH -D {directory}
+#PBS -A {account}
+#PBS -q batch
+#PBS -m n
+#PBS -l walltime={walltime}
+#PBS -l nodes={nnodes}
+#PBS -e {err}
+#PBS -o {out}
+#PBS -N {name}
+#PBS -d {directory}
+
+cd {directory}
 
 echo config/mpi.py pbs_string: header: {header}
 echo config/mpi.py pbs_string: scriptcommand: python {scriptcommand}
 echo config/mpi.py pbs_string: footer: {footer}
+
+echo config/mpi.py pbs_string: which python A: $(which python)
+
+
+
+
+
+module load mkl/13.1.117/intel
+module load suitesparse/4.2.1
+module load python/2.7.4
+module load py-scitools/2.7.4/impi-intel
+
+. /nopt/nrel/ecom/cid/virtipy/bin/activate
+
+export PYTHONPATH=$PYTHONPATH:/nopt/nrel/ecom/cid/pylada/5.0/pinstall/lib64/python2.7/site-packages
+
+
+
+
+
+echo ''
+echo config/mpi.py pbs_string: which python B: $(which python)
+
+echo ''
+echo config/mpi.py pbs_string: module list:
+module list 2>&1
+
+echo ''
+echo config/mpi.py: PATH: $PATH
+
+echo ''
+echo config/mpi.py: PYTHONPATH: $PYTHONPATH
+
+echo ''
+echo config/mpi.py === begin printenv
+printenv
+echo config/mpi.py === end printenv
+
+echo ''
+echo config/mpi.py === begin sorted printenv
+printenv | sort
+echo config/mpi.py === end sorted printenv
+
+echo config/mpi.py === begin cat nodefile
+cat $PBS_NODEFILE
+echo config/mpi.py === end cat nodefile
+
+python -c 'import argparse'
+echo config/mpi.py pbs_string: after test argparse
+
+python -c 'import numpy'
+echo config/mpi.py pbs_string: after test numpy
+
+python -c 'import quantities'
+echo config/mpi.py pbs_string: after test quantities
+
+python -c 'import mpi4py'
+echo config/mpi.py pbs_string: after test mpi4py
+
 
 {header}
 python {scriptcommand}
@@ -222,6 +339,7 @@ python {scriptcommand}
 
 '''
 """ Default pbs/slurm script. """
+
 
 do_multiple_mpi_programs = True
 """ Whether to get address of host machines at start of calculation. """
@@ -239,17 +357,24 @@ comm = MPI.COMM_WORLD
 size = comm.Get_size()
 rank = comm.Get_rank()
 
-nm = gethostname()
-#fname = os.getenv("HOME") + "/temp.figure_out_machines.%03d" % (rank,)
-#fdebug = open( fname, "w")
-#print >> fdebug, \
-#  "config/mpi.py: figure_out_machines: size: %d  rank: %d  nm: %s" \
-#  % (size, rank, nm,)
 
-names = comm.gather( nm, root=0)
+hostname = gethostname()
+names = comm.gather( hostname, root=0)
 if rank == 0:
   for nm in names:
     print "PYLADA MACHINE HOSTNAME:", nm
-    #print >> fdebug, "config/mpi.py: figure_out_machines: nm: %s" % (nm,)
-#fdebug.close()
+
+bugLev = 0
+if bugLev >= 5:
+  fname = os.getenv("HOME") + "/temp.figure_out_machines.%03d" % (rank,)
+  fdebug = open( fname, "w")
+  print >> fdebug, \
+    "config/mpi.py: figure_out_machines: size: %d  rank: %d  hostname: %s" \
+    % (size, rank, hostname,)
+
+  if rank == 0:
+    for nm in names:
+      print >> fdebug, "config/mpi.py: figure_out_machines: nm: %s" % (nm,)
+  fdebug.close()
+
 '''

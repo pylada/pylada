@@ -267,7 +267,7 @@ def crystal(file='fort.34'):
 
 
 
-def icsd_cif(filename):
+def icsd_cif_a( filename):
   """ Reads lattice from the ICSD \*cif files.
 
       It will not work in the case of other \*cif.
@@ -285,7 +285,7 @@ def icsd_cif(filename):
 
   lines = open(filename,'r').readlines()
   if bugLev >= 2:
-    print "  crystal/read: icsd_cif: filename: ", filename
+    print "  crystal/read: icsd_cif_a: filename: ", filename
 
   sym_big = 0
   sym_end = 0
@@ -370,35 +370,35 @@ def icsd_cif(filename):
   # _symmetry_equiv_pos_* lines are like:
   #     1     'x, x-y, -z+1/2'
   if bugLev >= 5:
-    print "  crystal/read: icsd_cif: sym_big: ", sym_big
-    print "  crystal/read: icsd_cif: sym_end: ", sym_end
+    print "  crystal/read: icsd_cif_a: sym_big: ", sym_big
+    print "  crystal/read: icsd_cif_a: sym_end: ", sym_end
 
   symm_ops = [ '(' + x.split()[1][1:] + x.split()[2] + x.split()[3][:-1] + ')'\
                for x in lines[sym_big+1:sym_end-1] ]
   if bugLev >= 5:
-    print "  crystal/read: icsd_cif: symm_ops a: ", symm_ops
+    print "  crystal/read: icsd_cif_a: symm_ops a: ", symm_ops
   # ['(x,x-y,-z+1/2)', '(-x+y,y,-z+1/2)', ...]
 
   # Insert decimal points after integers
   symm_ops = [re.sub(r'(\d+)', r'\1.', x) for x in symm_ops]
   if bugLev >= 5:
-    print "  crystal/read: icsd_cif: symm_ops b: ", symm_ops
+    print "  crystal/read: icsd_cif_a: symm_ops b: ", symm_ops
   # ['(x,x-y,-z+1./2.)', '(-x+y,y,-z+1./2.)', ...]
 
   # _atom_site_* lines are like:
   #   Mo1 Mo4+ 2 c 0.3333 0.6667 0.25 1. 0
   if bugLev >= 5:
-    print "  crystal/read: icsd_cif: pos_big: ", pos_big
-    print "  crystal/read: icsd_cif: pos_end: ", pos_end
+    print "  crystal/read: icsd_cif_a: pos_big: ", pos_big
+    print "  crystal/read: icsd_cif_a: pos_end: ", pos_end
   wyckoff = [ [x.split()[0],[x.split()[4],x.split()[5],x.split()[6]],x.split()[7]]\
               for x in lines[pos_big+1:pos_end] ]
   if bugLev >= 5:
-    print "  crystal/read: icsd_cif: wyckoff a: ", wyckoff
+    print "  crystal/read: icsd_cif_a: wyckoff a: ", wyckoff
   # [['Mo1', ['0.3333', '0.6667', '0.25'], '1.'], ['S1', ['0.3333', '0.6667', '0.621(4)'], '1.']]
 
   wyckoff = [w for w in wyckoff if int(float(w[-1][:4])+0.5) != 0]
   if bugLev >= 5:
-    print "  crystal/read: icsd_cif: wyckoff b: ", wyckoff
+    print "  crystal/read: icsd_cif_a: wyckoff b: ", wyckoff
   # [['Mo1', ['0.3333', '0.6667', '0.25'], '1.'], ['S1', ['0.3333', '0.6667', '0.621(4)'], '1.']]
 
   ############## Setting up a good wyckoff list
@@ -430,7 +430,7 @@ def icsd_cif(filename):
   # List of unique symbols ["Mo", "S"]
   symbols = list(set([w[0] for w in wyckoff]))
   if bugLev >= 5:
-    print "  crystal/read: icsd_cif: symbols: ", symbols
+    print "  crystal/read: icsd_cif_a: symbols: ", symbols
 
   # List of position vectors for each symbol
   positions = [[] for i in range(len(symbols))]
@@ -471,9 +471,9 @@ def icsd_cif(filename):
   a3 = array([c1, c2, sqrt(c**2-(c1**2+c2**2))])
   cell = array([a1,a2,a3])
   if bugLev >= 2:
-    print "  crystal/read: icsd_cif: a1: ", a1
-    print "  crystal/read: icsd_cif: a2: ", a2
-    print "  crystal/read: icsd_cif: a3: ", a3
+    print "  crystal/read: icsd_cif_a: a1: ", a1
+    print "  crystal/read: icsd_cif_a: a2: ", a2
+    print "  crystal/read: icsd_cif_a: a3: ", a3
   #  a1:  [ 3.15  0.    0.  ]
   #  a2:  [-1.575       2.72798002  0.        ]
   #  a3:  [  7.53157781e-16   1.30450754e-15   1.23000000e+01]
@@ -482,7 +482,7 @@ def icsd_cif(filename):
 
   from pylada.crystal import Structure, primitive
   if bugLev >= 2:
-    print "  crystal/read: cell: ", cell
+    print "  crystal/read: icsd_cif_a: cell: ", cell
   #  [[  3.15000000e+00   0.00000000e+00   0.00000000e+00]
   #   [ -1.57500000e+00   2.72798002e+00   0.00000000e+00]
   #   [  7.53157781e-16   1.30450754e-15   1.23000000e+01]]
@@ -491,23 +491,32 @@ def icsd_cif(filename):
     transpose( cell),
     scale = 1,
     name = basename( filename))
+
   for i in range(len(symbols)):
     if bugLev >= 5:
-      print "    crystal/read: i: ", i, "  symbol: ", symbols[i], \
+      print "    crystal/read: icsd_cif_a: i: ", i, \
+        "  symbol: ", symbols[i], \
         "  len position: ", len(positions[i])
     # crystal/read: i:  0   symbol:  Mo   len position:  2
 
     for j in range(len(positions[i])):
       atpos = dot( transpose(cell), positions[i][j])
       if bugLev >= 5:
-        print "      crystal/read: j: ", j, "  pos: ", positions[i][j]
+        print "      j: ", j, "  pos: ", positions[i][j]
         print "        atpos: ", atpos
       #  j:  0   pos:  [0.3333, 0.6666000000000001, 0.25]
       #  atpos:  [  6.32378655e-16   1.81847148e+00   3.07500000e+00]
 
       structure.add_atom( atpos[0], atpos[1], atpos[2], symbols[i])
 
-  return primitive( structure)
+  if bugLev >= 2:
+    print "  crystal/read: icsd_cif_a: structure:\n", structure
+  
+  prim = primitive( structure)
+  if bugLev >= 2:
+    print "  crystal/read: icsd_cif_a: primitive structure:\n", prim
+  
+  return prim
 
 
 #OLD
@@ -524,3 +533,61 @@ def icsd_cif(filename):
 #
 #  return lattice
 
+
+
+
+
+
+
+def icsd_cif_b( filename):
+  from os.path import basename
+  from numpy import dot, transpose
+  from pylada.crystal import Structure, primitive
+  from pylada.misc import bugLev
+  from . import readCif
+
+  rdr = readCif.CifReader( 0, filename)    # buglevel = 0
+  vaspMap = rdr.getVaspMap()
+  cellBasis = vaspMap['cellBasis']
+
+  structure = Structure(
+    transpose( cellBasis),
+    scale = 1,
+    name = basename( filename))
+
+  usyms = vaspMap['uniqueSyms']
+  posVecs = vaspMap['posVecs']
+  mults = [len(x) for x in posVecs]   # multiplicities
+  if bugLev >= 5:
+    print "    crystal/read: len(usyms): %d  usyms: %s" \
+      % (len( usyms), usyms,)
+    print "    crystal/read: len(posVecs): %d" % (len(posVecs),)
+    print "    crystal/read: len(mults):   %d  mults:   %s" \
+      % (len( mults), mults,)
+
+  for ii in range( len( usyms)):
+    if bugLev >= 5:
+      print "    crystal/read: icsd_cif_b: ii: ", ii, \
+        "  usym: ", usyms[ii], \
+        "  mult: ", mults[ii], \
+        "  posVecs: ", posVecs[ii]
+    # crystal/read: i:  0   symbol:  Mo   len position:  2
+
+    for jj in range( mults[ii]):
+      atpos = dot( transpose( cellBasis), posVecs[ii][jj])
+      if bugLev >= 5:
+        print "      jj: ", jj, "  pos: ", posVecs[ii][jj]
+        print "        atpos: ", atpos
+      #  j:  0   pos:  [0.3333, 0.6666000000000001, 0.25]
+      #  atpos:  [  6.32378655e-16   1.81847148e+00   3.07500000e+00]
+
+      structure.add_atom( atpos[0], atpos[1], atpos[2], usyms[ii])
+
+  if bugLev >= 2:
+    print "  crystal/read: icsd_cif_b: structure:\n", structure
+  
+  prim = primitive( structure)
+  if bugLev >= 2:
+    print "  crystal/read: icsd_cif_b: primitive structure:\n", prim
+  
+  return prim

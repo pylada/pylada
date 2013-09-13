@@ -275,12 +275,12 @@ def test_random():
       except ValueError: pass
 
     # random structure
-    structure = supercell(lattice, dot(lattice.cell, get_cell(5)))
+    structure = supercell(lattice, dot(lattice.cell, get_cell(3)))
     for atom in structure: atom.type = choice(lattice[atom.site].type)
 
     # random supercell
     for j in xrange(5):
-      sp = supercell(structure, dot(structure.cell, get_cell(5)))
+      sp = supercell(structure, dot(structure.cell, get_cell(3)))
       for atom in sp: atom.site = structure[atom.site].site
       assert all(abs(a(sp) - len(sp) / len(structure) * a(structure)) < 1e-8)
 

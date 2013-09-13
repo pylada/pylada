@@ -1,5 +1,6 @@
 from glob import iglob
-from pylada.crystal.read import icsd_cif
+from pylada.crystal.read import icsd_cif_a
+from pylada.crystal.read import icsd_cif_b
 
 from pylada.misc import bugLev
 
@@ -44,7 +45,7 @@ vasp.lpead = False
 
 # See vasp/functional.py:  elementName, fileName, max or min oxidation state
 
-pseudoDir = "/scratch/vnsteva/lada/pseudos"
+pseudoDir = "/nopt/nrel/ecom/cid/vasp.pseudopotentials.a/pseudos"
 
 vasp.add_specie = "Ag", pseudoDir + "/Ag", U("dudarev", "d", 5.0), 1 
 vasp.add_specie = "Al", pseudoDir + "/Al", None,  3
@@ -137,9 +138,9 @@ vasp.keep_steps = True
 
 matLatPairs = []
 
-for fname in iglob("icsd_structures/*.cif"):
+for fname in iglob("structs/*.cif"):
   material = fname[fname.index('/')+1:-4]
-  lattice = icsd_cif( fname)
+  lattice = icsd_cif_b( fname)
   if bugLev >= 1:
     print "test/hi/inputCif: material: ", material
     print "test/hi/inputCif: lattice: ", lattice

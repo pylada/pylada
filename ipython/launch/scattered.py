@@ -16,7 +16,9 @@ def launch(self, event, jobfolders):
   from ...misc import Changedir
   from ... import pbs_string, default_pbs, qsub_exe, default_comm
   from . import get_walltime, get_mppalloc, get_queues, scattered_script
+  from pylada.misc import bugLev
 
+  if bugLev >= 1: print "launch/scattered: event: %s" % (event,)
   shell = get_shell(self)
 
   pbsargs = deepcopy(dict(default_comm))
@@ -25,12 +27,18 @@ def launch(self, event, jobfolders):
 
   mppalloc = get_mppalloc(shell, event)
   if mppalloc is None: return
+
+  # Set pbsargs['walltime'] to a string like '03:59:59'
   if not get_walltime(shell, event, pbsargs): return
+
+  # Set pbsargs['queue'], pbsargs['account']
   if not get_queues(shell, event, pbsargs): return
+  if bugLev >= 1: print "launch/scattered: pbsargs: %s" % (pbsargs,)
  
 
   # gets python script to launch in pbs.
   pyscript = scattered_script.__file__
+  if bugLev >= 1: print "launch/scattered: pyscript: %s" % (pyscript,)
   if pyscript[-1] == 'c': pyscript = pyscript[:-1]
 
   # creates file names.
@@ -43,11 +51,15 @@ def launch(self, event, jobfolders):
   # now  loop over jobfolders
   pbsscripts = []
   for current, path in jobfolders:
+    if bugLev >= 1: print "launch/scattered: current: %s  path: %s" \
+      % (current, path,)
     # creates directory.
     directory = dirname(path)
     with Changedir(directory) as pwd: pass
     # loop over executable folders in current jobfolder
     for name, job in current.root.iteritems():
+      if bugLev >= 1: print "launch/scattered: name: %s  job: %s  tagged: %s" \
+        % (name, job, job.is_tagged,)
       # avoid jobfolder which are off
       if job.is_tagged: continue
       # avoid successful jobs.unless specifically requested
@@ -69,8 +81,10 @@ def launch(self, event, jobfolders):
       pbsargs['name'] = name if len(name)                                      \
                         else "{0}-root".format(basename(path))
       pbsargs['directory'] = directory
+      pbsargs['bugLev'] = bugLev
+      
       pbsargs['scriptcommand']                                                 \
-           = "{0} --nbprocs {n} --ppn {ppn} --jobid={1} {2}"                   \
+           = "{0} --bugLev {bugLev} --nbprocs {n} --ppn {ppn} --jobid={1} {2}"                   \
              .format(pyscript, name, path, **pbsargs)
       ppath = pbspaths(directory, name, 'script')
       print "launch/scattered: ppath: \"%s\"" % (ppath,)

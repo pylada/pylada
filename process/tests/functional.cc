@@ -1,6 +1,6 @@
+#include <mpi.h>
 #include <math.h> 
 #include <iostream>
-#include <mpi.h>
 #include <unistd.h>
 #include <string>
 #include <time.h>

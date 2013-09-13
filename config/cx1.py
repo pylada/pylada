@@ -25,7 +25,7 @@ def pbs_string(**kwargs):
 default_comm = { 'n': 2, 'ppn': default_pbs['ppn']}
 """ Default mpirun parameters. """
 
-mpirun_exe = "mpiexec {program}"
+mpirun_exe = "mpirun -np {n} {program}"
 """ Command-line to launch external mpi programs. """
 do_multiple_mpi_program = True
 """ Whether setup to lauch multiple MPI programs. """
@@ -49,7 +49,11 @@ def machine_dependent_call_modifier(formatter=None, comm=None, env=None):
   nodefile = comm.nodefile()
   with open(nodefile, 'w') as file:
     for key, value in comm.machines.iteritems():
-      file.write('\n'.join([key]*value) + '\n')
+      stg = '\n'.join([key]*value) + '\n'
+      if bugLev >= 5:
+        print "config/cx1: nodefile: key: \"%s\"  value: \"%s\"  stg: \"%s\"" \
+          % ( key, value, stg,)
+      file.write(stg)
   # modify environment variable
   env['PBS_NODEFILE'] = nodefile
 

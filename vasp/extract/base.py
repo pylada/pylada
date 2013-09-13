@@ -94,9 +94,12 @@ class ExtractBase(object):
   @property
   def iterTimes(self):
     """ Returns a list of pairs: [[cpuTime,realTime], ...]
-    from lines like:
+    from lines like::
+
          LOOP+:  cpu time   22.49: real time   24.43
-    or sometimes like:
+
+    or sometimes like::
+
          LOOP+:  VPU time   42.93: CPU time   43.04
          In this case "CPU" is wall time, and "VPU" is CPU.
          See: http://cms.mpi.univie.ac.at/vasp-forum/forum_viewtopic.php?3.336

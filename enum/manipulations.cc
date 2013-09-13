@@ -175,8 +175,7 @@ namespace Pylada
                                 "yielded by an NDimIterator.");
         return NULL;
       }
-      if( PyArray_TYPE((PyArrayObject*)_in)
-            != python::numpy::type<t_ndim>::value ) 
+      if( PyArray_TYPE((PyArrayObject*)_in) != python::numpy::type<t_ndim>::value ) 
       {
         PYLADA_PYERROR(TypeError, "second argument should be a numpy array "
                                 "yielded by an NDimIterator.");
@@ -260,8 +259,7 @@ namespace Pylada
       std::vector<t_ndim>::iterator i_out = _self->counter.begin();
       std::vector<t_ndim>::iterator const i_end = _self->counter.end();
       std::vector<t_ndim>::iterator i_manip = _self->i_first->begin();
-      t_ndim * const i_data
-         = (t_ndim*) PyArray_DATA((PyArrayObject*)_self->arrayin); 
+      t_ndim * const i_data = (t_ndim*) PyArray_DATA((PyArrayObject *)_self->arrayin); 
       for(; i_out != i_end; ++i_out, ++i_manip)
         *i_out = *(i_data + *i_manip);
       Py_INCREF(_self->arrayout);
