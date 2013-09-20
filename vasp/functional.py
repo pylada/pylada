@@ -113,7 +113,7 @@ class Vasp(AttrBlock):
                           NElect, Algo, Ediff, Ediffg, Encut, EncutGW, IStart, \
                           ICharg, IStruc, LDAU, PrecFock, Precision, Nsw,      \
                           Isif, IBrion, Relaxation, ISmear, LSorbit, Sigma,    \
-                          LMaxMix, EdiffPerAtom, EdiffgPerAtom, NonScf
+                          LMaxMix, LVHar, EdiffPerAtom, EdiffgPerAtom, NonScf
     from ..tools.input import TypedKeyword, ChoiceKeyword
     super(Vasp, self).__init__()
     if bugLev >= 5:
@@ -312,12 +312,16 @@ class Vasp(AttrBlock):
         .. seealso:: ISYM_
         .. _ISYM: http://cms.mpi.univie.ac.at/vasp/guide/node115.html
     """ 
+
     self.lmaxmix   = LMaxMix()
     """ Cutoff *l*-quantum number of PAW charge densities passed to mixer 
 
         .. seealso:: LMAXMIX_ 
         .. _LMAXMIX: http://cms.mpi.univie.ac.at/wiki/index.php/LMAXMIX
     """
+
+    self.lvhar     = LVHar()
+
     self.lorbit    = ChoiceKeyword(values=(0, 1, 2, 5, 10, 11, 12))
     """ Decides whether PROOUT and PROOCAR are writtent to disk.
 
@@ -744,7 +748,7 @@ class Vasp(AttrBlock):
 
         Vasp allows a number of options:
 
-        - metal (-5): Tetrahedron method with Blöchl correction (requires a
+        - metal (-5): Tetrahedron method with Blochl correction (requires a
           |Gamma|-centered *k*-mesh)
         - tetra (-4): Tetrahedron method (requires a |Gamma|-centered *k*-mesh)
         - dynamic (-3): Performs a loop over smearing parameters supplied in

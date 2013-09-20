@@ -64,6 +64,7 @@ class Incar(object):
     self.add_param = "isym",        None
     self.add_param = "lmaxfockae",  None
     self.add_param = "lmaxmix",     4
+    self.add_param = "lvhar",       False
     self.add_param = "lorbit",      None
     self.add_param = "nbands",      None
     self.add_param = "nomega",      None

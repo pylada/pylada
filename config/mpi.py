@@ -281,7 +281,7 @@ default_pbs = {
 
 pbs_string =  '''#!/bin/bash
 #PBS -A {account}
-#PBS -q batch
+#PBS -q {queue}
 #PBS -m n
 #PBS -l walltime={walltime}
 #PBS -l nodes={nnodes}
@@ -309,7 +309,7 @@ module load py-scitools/2.7.4/impi-intel
 
 . /nopt/nrel/ecom/cid/virtipy/bin/activate
 
-export PYTHONPATH=$PYTHONPATH:/nopt/nrel/ecom/cid/pylada/5.0/pinstall/lib64/python2.7/site-packages
+export PYTHONPATH=$PYTHONPATH:/nopt/nrel/ecom/cid/pylada/5.0.01/pinstall/lib64/python2.7/site-packages
 
 
 
@@ -386,17 +386,16 @@ if rank == 0:
   for nm in names:
     print "PYLADA MACHINE HOSTNAME:", nm
 
-bugLev = 0
-if bugLev >= 5:
-  fname = os.getenv("HOME") + "/temp.figure_out_machines.%03d" % (rank,)
-  fdebug = open( fname, "w")
-  print >> fdebug, \
-    "config/mpi.py: figure_out_machines: size: %d  rank: %d  hostname: %s" \
-    % (size, rank, hostname,)
-
-  if rank == 0:
-    for nm in names:
-      print >> fdebug, "config/mpi.py: figure_out_machines: nm: %s" % (nm,)
-  fdebug.close()
+#if bugLev >= 5:
+#  fname = os.getenv("HOME") + "/temp.figure_out_machines.%03d" % (rank,)
+#  fdebug = open( fname, "w")
+#  print >> fdebug, \
+#    "config/mpi.py: figure_out_machines: size: %d  rank: %d  hostname: %s" \
+#    % (size, rank, hostname,)
+#
+#  if rank == 0:
+#    for nm in names:
+#      print >> fdebug, "config/mpi.py: figure_out_machines: nm: %s" % (nm,)
+#  fdebug.close()
 
 '''

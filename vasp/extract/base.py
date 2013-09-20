@@ -513,6 +513,14 @@ class ExtractBase(object):
 
   @property
   @make_cached
+  def lvhar(self):
+    """ Greps LVHAR from OUTCAR. """
+    result = self._find_first_OUTCAR(r"""\s*LVHAR\s*=\s*(\d+)\s+""")
+    if result is None: return None
+    return int(result.group(1))
+
+  @property
+  @make_cached
   def istart(self):
     """ Greps ISTART from OUTCAR. """
     result = self._find_first_OUTCAR(r"""\s*ISTART\s*=\s*(\d+)\s+""")

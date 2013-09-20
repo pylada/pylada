@@ -50,8 +50,9 @@ vasp.relaxation = "ionic"
 vasp.set_symmetries = "off"
 vasp.kpoints        = "\n0\nAuto\n20"
 vasp.lorbit         = 10
-###vasp.add_param      = "lmaxmix",4
+
 vasp.lmaxmix = 4
+vasp.lvhar = False
 
 vasp.lcharg = True
 vasp.lwave = True

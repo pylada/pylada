@@ -1070,6 +1070,7 @@ class LSorbit(BoolKeyword):
       raise ValueError( 'Self-consistent calculation was unsuccessful. '       \
                         'Cannot perform LSORBIT = True calculation.' )
     vasp.lmaxmix = vasp.restart.lmaxmix
+    vasp.lvhar = vasp.restart.lvhar
     return super(LSorbit, self).output_map(**kwargs)
 
 class NonScf(BoolKeyword):
@@ -1081,3 +1082,8 @@ class NonScf(BoolKeyword):
 class LMaxMix(TypedKeyword):
   keyword = 'lmaxmix'
   type = int
+
+class LVHar(BoolKeyword):
+  keyword = 'LVHAR'
+  def __init__(self, value=False):
+    super(LVHar, self).__init__(value=value)
