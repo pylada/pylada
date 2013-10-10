@@ -285,6 +285,7 @@ pbs_string =  '''#!/bin/bash
 #PBS -m n
 #PBS -l walltime={walltime}
 #PBS -l nodes={nnodes}
+#PBS -l feature=16core
 #PBS -e {err}
 #PBS -o {out}
 #PBS -N {name}
@@ -309,7 +310,7 @@ module load py-scitools/2.7.4/impi-intel
 
 . /nopt/nrel/ecom/cid/virtipy/bin/activate
 
-export PYTHONPATH=$PYTHONPATH:/nopt/nrel/ecom/cid/pylada/5.0.01/pinstall/lib64/python2.7/site-packages
+export PYTHONPATH=$PYTHONPATH:/nopt/nrel/ecom/cid/pylada/5.0.02/pinstall/lib64/python2.7/site-packages
 
 
 

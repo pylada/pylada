@@ -72,11 +72,14 @@ class Magmom(SpecialVaspParam):
       moments = [getattr(u, 'magmom', 0e0) for u in structure if u.type == specie]
       tupled = [[1, moments[0]]]
       for m in moments[1:]: 
-        if abs(m - tupled[-1][1]) < 1e-12: tupled[-1][0] += 1
+        # Change precision from 1.e-12 to 1.e-1, per Vladan, 2013-10-09
+        #if abs(m - tupled[-1][1]) < 1e-12: tupled[-1][0] += 1
+        if abs(m - tupled[-1][1]) < 1e-1: tupled[-1][0] += 1
         else: tupled.append([1, m])
       for i, m in tupled:
-        if i == 1: result += "{0:.2f} ".format(m)
-        else:      result += "{0}*{1:.2f} ".format(i, m)
+        # Change format from .2f to .1f, per Vladan, 2013-10-09
+        if i == 1: result += "{0:.1f} ".format(m)
+        else:      result += "{0}*{1:.1f} ".format(i, m)
     return 'MAGMOM = {0}'.format(result.rstrip())
   
 class System(SpecialVaspParam):
