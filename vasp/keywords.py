@@ -103,13 +103,16 @@ class Magmom(ValueKeyword):
       # Get tupled = [[3, -4.0], [1, 4.0], [2, -4.0]]
       tupled = [[1, moments[0]]]
       for m in moments[1:]: 
-        if abs(m - tupled[-1][1]) < 1e-12: tupled[-1][0] += 1
+        # Change precision from 1.e-12 to 1.e-1, per Vladan, 2013-10-09
+        #if abs(m - tupled[-1][1]) < 1e-12: tupled[-1][0] += 1
+        if abs(m - tupled[-1][1]) < 1e-1: tupled[-1][0] += 1
         else: tupled.append([1, m])
 
       # Create result = '3*-4.00 4.00 2*-4.00 '
       for i, m in tupled:
-        if i == 1: result += "{0:.2f} ".format(m)
-        else:      result += "{0}*{1:.2f} ".format(i, m)
+        # Change format from .2f to .1f, per Vladan, 2013-10-09
+        if i == 1: result += "{0:.1f} ".format(m)
+        else:      result += "{0}*{1:.1f} ".format(i, m)
     return {self.keyword: result.rstrip()}
 
 class System(ValueKeyword):

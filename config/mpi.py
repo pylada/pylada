@@ -285,7 +285,7 @@ pbs_string =  '''#!/bin/bash
 #PBS -m n
 #PBS -l walltime={walltime}
 #PBS -l nodes={nnodes}
-#PBS -l feature=16core
+#PBS -l feature=24core
 #PBS -e {err}
 #PBS -o {out}
 #PBS -N {name}
