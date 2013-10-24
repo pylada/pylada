@@ -237,6 +237,7 @@ class ExtractBase(object):
     except:
       for i in range(3): result.cell[i,:] = array(lines[-cell_index+i].split()[-3:], dtype="float64")
       result.cell = inv(result.cell)
+    # Get list like ['S', 'S', 'S', 'S', 'S', 'S', 'Fe', 'Fe']
     species = [type for type, n in zip(self.species, self.stoichiometry) for i in xrange(n)]
     while atom_index > 0 and len(lines[-atom_index].split()) == 6:
       result.add_atom( pos=array(lines[-atom_index].split()[:3], dtype="float64"),
@@ -1553,10 +1554,10 @@ class ExtractBase(object):
           for j in xrange(3): stress[i][j, j] += float(regex.group(i*6+1+j))
           stress[i][0,1] += float(regex.group(i*6+4))
           stress[i][1,0] += float(regex.group(i*6+4))
-          stress[i][1,2] += float(regex.group(i*6+4))
-          stress[i][2,1] += float(regex.group(i*6+4))
-          stress[i][0,2] += float(regex.group(i*6+4))
-          stress[i][2,0] += float(regex.group(i*6+4))
+          stress[i][1,2] += float(regex.group(i*6+4))  # should be: + 5
+          stress[i][2,1] += float(regex.group(i*6+4))  # should be: + 5
+          stress[i][0,2] += float(regex.group(i*6+4))  # should be: + 6
+          stress[i][2,0] += float(regex.group(i*6+4))  # should be: + 6
         if sum(abs(stress[0].flatten())) > sum(abs(stress[1].flatten())):
           result.append( stress[0] * float(eV.rescale(J) * 1e22                \
                          / abs(det(self.structure.cell*self.structure.scale))) \

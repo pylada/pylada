@@ -175,7 +175,27 @@ def iter_relax( vasp, structure, outdir=None, first_trial=None,
 
   if bugLev >= 5:
     print "vasp/relax: iter_relax: vasp: %s" % (vasp,)
+
+    # Shows type: pylada.tools.SuperCall
+    print "vasp/relax: iter_relax: type(vasp): %s" % (type(vasp),)
+
+    # Shows __dict__ containing
+    #   key: '_class',  value = <class 'pylada.vasp.relax.Relax'>
+    #   key: '_object', value = generated source code from inputCif.py, like:
+    #     from pylada.vasp.relax import Relax
+    #     from quantities.quantity import Quantity
+    #     relax = Relax()
+    #     relax.addgrid        = True
+    #     relax.ediff          = 6e-05
+    #     relax.encut          = 340.0
+    #     relax.first_trial    = {'kpoints': '\n0\nAuto\n10', 'encut': 0.9}
+    #     relax.ibrion         = 2
+    #     ...
+    #     relax.species        = {'Ni': Specie(...), ...}
+    print "vasp/relax: iter_relax: vasp.__dict__: %s" % (vasp.__dict__,)
+
     print "vasp/relax: iter_relax: structure: %s" % (structure,)
+    print "vasp/relax: iter_relax: type(structure): %s" % (type(structure),)
     print "vasp/relax: iter_relax: outdir: %s" % (outdir,)
 
   # make this function stateless.
@@ -188,8 +208,9 @@ def iter_relax( vasp, structure, outdir=None, first_trial=None,
   # .../mos2_024000/mos2_024000.cif/non-magnetic
 
   # convergence criteria and behavior.
-  is_converged = _get_is_converged( vasp, relaxed_structure, convergence=convergence,
-                                    minrelsteps=minrelsteps, **kwargs)
+  is_converged = _get_is_converged(
+    vasp, relaxed_structure, convergence=convergence,
+    minrelsteps=minrelsteps, **kwargs)
 
   # number of restarts.
   nb_steps, output = 0, None
@@ -220,7 +241,7 @@ def iter_relax( vasp, structure, outdir=None, first_trial=None,
   # performs relaxation calculations.
   while (maxcalls <= 0 or nb_steps < maxcalls) and relaxation.find("cellshape") != -1:
     if bugLev >= 5:
-      print "vasp/relax: iter_relax: initial loop head"
+      print "vasp/relax: iter_relax: relax cellshape loop head"
     # performs initial calculation.   
     for u in vasp.iter\
       (\
@@ -231,23 +252,30 @@ def iter_relax( vasp, structure, outdir=None, first_trial=None,
         **params
       ):
       if bugLev >= 5:
-        print "vasp/relax: iter_relax: initial yield u: %s" % (u,)
+        # Shows alternating u:
+        #   <pylada.process.program.ProgramProcess object at 0x1569f50>
+        #   Extract("/.../non-magnetic/relax_cellshape/0")
+        #   <pylada.process.program.ProgramProcess object at 0x1605d50>
+        #   Extract("/.../non-magnetic/relax_cellshape/1")
+        #   <pylada.process.program.ProgramProcess object at 0x1605f50>
+        #   Extract("/.../non-magnetic/relax_cellshape/2")
+        print "vasp/relax: iter_relax: relax cellshape yield u: %s" % (u,)
       yield u
 
     output = vasp.Extract(join(outdir, join("relax_cellshape", str(nb_steps))))
     if bugLev >= 5:
-      print "vasp/relax: iter_relax: initial output: %s" % (output,)
+      print "vasp/relax: iter_relax: relax cellshape output: %s" % (output,)
     if not output.success: ExternalRunFailed("VASP calculations did not complete.")
     relaxed_structure = output.structure
     
     nb_steps += 1
     if bugLev >= 5:
-      print "vasp/relax: iter_relax: initial nb_steps: %s" % (nb_steps,)
+      print "vasp/relax: iter_relax: relax cellshape nb_steps: %s" % (nb_steps,)
     if nb_steps == 1 and len(first_trial) != 0: params = kwargs; continue
     # check for convergence.
     isConv = is_converged(output)
     if bugLev >= 5:
-      print "vasp/relax: iter_relax: initial isConv: %s" % (isConv,)
+      print "vasp/relax: iter_relax: relax cellshape isConv: %s" % (isConv,)
     if isConv: break;
 
   # Does not perform ionic calculation if convergence not reached.
@@ -259,7 +287,7 @@ def iter_relax( vasp, structure, outdir=None, first_trial=None,
     print "vasp/relax: iter_relax: start ionic calc"
   while (maxcalls <= 0 or nb_steps < maxcalls + 1) and relaxation.find("ionic") != -1:
     if bugLev >= 5:
-      print "vasp/relax: iter_relax: ionic loop head"
+      print "vasp/relax: iter_relax: relax ionic loop head"
     for u in vasp.iter\
       (\
         relaxed_structure, 
@@ -269,23 +297,23 @@ def iter_relax( vasp, structure, outdir=None, first_trial=None,
         **params
       ):
       if bugLev >= 5:
-        print "vasp/relax: iter_relax: ionic yield u: %s" % (u,)
+        print "vasp/relax: iter_relax: relax ionic yield u: %s" % (u,)
       yield u
 
     output = vasp.Extract(join(outdir, join("relax_ions", str(nb_steps))))
     if bugLev >= 5:
-      print "vasp/relax: iter_relax: ionic output: %s" % (output,)
+      print "vasp/relax: iter_relax: relax ionic output: %s" % (output,)
     if not output.success: ExternalRunFailed("VASP calculations did not complete.")
     relaxed_structure = output.structure
 
     nb_steps += 1
     if bugLev >= 5:
-      print "vasp/relax: iter_relax: ionic nb_steps: %s" % (nb_steps,)
+      print "vasp/relax: iter_relax: relax ionic nb_steps: %s" % (nb_steps,)
     if nb_steps == 1 and len(first_trial) != 0: params = kwargs; continue
     # check for convergence.
     isConv = is_converged(output)
     if bugLev >= 5:
-      print "vasp/relax: iter_relax: ionic isConv: %s" % (isConv,)
+      print "vasp/relax: iter_relax: relax ionic isConv: %s" % (isConv,)
     if isConv: break;
 
   # Does not perform static calculation if convergence not reached.

@@ -579,7 +579,9 @@ def icsd_cif_b( filename):
 
   usyms = vaspMap['uniqueSyms']
   posVecs = vaspMap['posVecs']
-  mults = [len(x) for x in posVecs]   # multiplicities
+
+  # multiplicities = num atoms of each type.
+  mults = [len(x) for x in posVecs]
   if bugLev >= 5:
     print "    crystal/read: len(usyms): %d  usyms: %s" \
       % (len( usyms), usyms,)
@@ -587,6 +589,7 @@ def icsd_cif_b( filename):
     print "    crystal/read: len(mults):   %d  mults:   %s" \
       % (len( mults), mults,)
 
+  # For each unique type of atom ...
   for ii in range( len( usyms)):
     if bugLev >= 5:
       print "    crystal/read: icsd_cif_b: ii: ", ii, \
@@ -595,6 +598,7 @@ def icsd_cif_b( filename):
         "  posVecs: ", posVecs[ii]
     # crystal/read: i:  0   symbol:  Mo   len position:  2
 
+    # For each atom of that type ...
     for jj in range( mults[ii]):
       atpos = dot( transpose( cellBasis), posVecs[ii][jj])
       if bugLev >= 5:
