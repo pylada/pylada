@@ -227,7 +227,9 @@ def iter_relax( vasp, structure, outdir=None, first_trial=None,
   # defaults to vasp.relaxation
   relaxation = kwargs.pop('relaxation', vasp.relaxation)
   if bugLev >= 5:
-    print "vasp/relax: iter_relax: relaxation a: %s\n" % (relaxation,)
+    # Shows: cellshape ionic volume
+    print "vasp/relax: iter_relax: relaxation a: %s  type: %s\n" \
+      % (relaxation, type(relaxation),)
   # cellshape ionic volume
   # could be that relaxation comes from vasp.relaxation which is a tuple.
   if isinstance(relaxation, tuple):
@@ -235,14 +237,20 @@ def iter_relax( vasp, structure, outdir=None, first_trial=None,
     vasp.relaxation = relaxation
     relaxation = relaxation[0]
   if bugLev >= 5:
-    print "vasp/relax: iter_relax: relaxation b: %s\n" % (relaxation,)
+    # Shows: cellshape ionic volume
+    print "vasp/relax: iter_relax: relaxation b: %s  type: %s\n" \
+      % (relaxation, type(relaxation),)
   # cellshape ionic volume
 
   # performs relaxation calculations.
   while (maxcalls <= 0 or nb_steps < maxcalls) and relaxation.find("cellshape") != -1:
     if bugLev >= 5:
+      # Once per output dir like .../relax_cellshape/0, 1, 2, ...
       print "vasp/relax: iter_relax: relax cellshape loop head"
-    # performs initial calculation.   
+
+    # Invokes vasp/functional.Vasp.__init__
+    # and vasp/functional: iter, which calls bringup,
+    # which calls write_incar, write_kpoints, etc.
     for u in vasp.iter\
       (\
         relaxed_structure,
@@ -252,13 +260,9 @@ def iter_relax( vasp, structure, outdir=None, first_trial=None,
         **params
       ):
       if bugLev >= 5:
-        # Shows alternating u:
+        # For each iteration of the outer while loop, shows one pair:
         #   <pylada.process.program.ProgramProcess object at 0x1569f50>
-        #   Extract("/.../non-magnetic/relax_cellshape/0")
-        #   <pylada.process.program.ProgramProcess object at 0x1605d50>
-        #   Extract("/.../non-magnetic/relax_cellshape/1")
-        #   <pylada.process.program.ProgramProcess object at 0x1605f50>
-        #   Extract("/.../non-magnetic/relax_cellshape/2")
+        #   Extract("/.../non-magnetic/relax_cellshape/0, 1, 2, ...")
         print "vasp/relax: iter_relax: relax cellshape yield u: %s" % (u,)
       yield u
 
@@ -297,17 +301,22 @@ def iter_relax( vasp, structure, outdir=None, first_trial=None,
         **params
       ):
       if bugLev >= 5:
+        # Shows a pair:
+        #   <pylada.process.program.ProgramProcess object at 0x2651fd0>
+        #   Extract(".../non-magnetic/relax_ions/3")
         print "vasp/relax: iter_relax: relax ionic yield u: %s" % (u,)
       yield u
 
     output = vasp.Extract(join(outdir, join("relax_ions", str(nb_steps))))
     if bugLev >= 5:
+      # Shows:  Extract(".../non-magnetic/relax_ions/3")
       print "vasp/relax: iter_relax: relax ionic output: %s" % (output,)
     if not output.success: ExternalRunFailed("VASP calculations did not complete.")
     relaxed_structure = output.structure
 
     nb_steps += 1
     if bugLev >= 5:
+      # Shows 4 (3 for cellshape, 1 for ionic)
       print "vasp/relax: iter_relax: relax ionic nb_steps: %s" % (nb_steps,)
     if nb_steps == 1 and len(first_trial) != 0: params = kwargs; continue
     # check for convergence.
@@ -315,6 +324,8 @@ def iter_relax( vasp, structure, outdir=None, first_trial=None,
     if bugLev >= 5:
       print "vasp/relax: iter_relax: relax ionic isConv: %s" % (isConv,)
     if isConv: break;
+
+  # gwmod: same while loop as above, but with relaxation="gw"
 
   # Does not perform static calculation if convergence not reached.
   if nofail == False and is_converged(output) == False: 

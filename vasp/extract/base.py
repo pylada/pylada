@@ -61,6 +61,10 @@ class ExtractBase(object):
     """ True if this is a DFT calculation, as opposed to GW. """
     try: return self.algo not in ['gw', 'gw0', 'chi', 'scgw', 'scgw0']
     except: return False
+
+  # fixmod:
+  # Caution: I don't think the following will work,
+  # as self.algo, as set by algo() above, will never be *gw*.
   @property
   def is_gw(self):
     """ True if this is a GW calculation, as opposed to DFT. """
@@ -1533,6 +1537,8 @@ class ExtractBase(object):
     return  self.electronic_dielectric_constant                                \
             + self.ionic_dielectric_constant
 
+  # fixmod:
+  # Caution: I think the regex.group args below are incorrect.
   @property
   @make_cached
   def stresses(self):

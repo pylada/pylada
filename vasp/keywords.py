@@ -1029,6 +1029,8 @@ class Relaxation(BaseKeyword):
                         "and volume at constant cell-shape.\n" )
     else: instance.isif = 2
 
+    # gwmod: if 'gw' in value: ...
+
   def output_map(self, **kwargs): return None
 
 class ISmear(AliasKeyword):
