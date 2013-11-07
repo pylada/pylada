@@ -54,6 +54,7 @@ def explore(self, cmdl):
   import argparse
   from os.path import join, dirname
   from pylada import interactive
+  from pylada.misc import bugLev
 
   # options supported by all.
   parser = argparse.ArgumentParser(prog='%explore',
@@ -125,9 +126,13 @@ def explore(self, cmdl):
       # successful jobs are not errors.
       if extract.success: job.tag()
       # running jobs are not errors either.
-      elif getattr(extract, 'is_running', False) is True: job.tag()
-      # what's left is an error.
-      else: job.untag()
+      else:
+        is_run = getattr(extract, 'is_running', False)
+        if is_run: job.tag()
+        # what's left is an error.
+        else: job.untag()
+        if bugLev >= 5: print 'ipython/explore errors: dir: %s  is_run: %s' \
+          % (directory, is_run,)
 
   # Look only for jobs which are successfull.
   if args.type == "results": 
@@ -149,8 +154,28 @@ def explore(self, cmdl):
     for name, job in interactive.jobfolder.iteritems():
       directory = join(dirname(interactive.jobfolder_path), name)
       extract = job.functional.Extract(directory)
-      if getattr(extract, 'is_running', False) is True: job.untag()
+      is_run = getattr(extract, 'is_running', False)
+      if is_run:
+        # exploremod:
+        #   import subprocess
+        #   print job.jobNumber, job.jobId
+        #   proc = subprocess.Popen(
+        #     ['checkjob', str(job.jobNumber)],
+        #     shell=False,
+        #     cwd=wkDir,
+        #     stdin=subprocess.PIPE,
+        #     stdout=subprocess.PIPE,
+        #     stderr=subprocess.PIPE,
+        #     bufsize=10*1000*1000)
+        #   (stdout, stderr) = proc.communicate()
+        #   parse stdout to get status.  May be 'not found'.
+        #   if idle or active: job.untag()
+        #   else: job.tag()
+
+        job.untag()
       else: job.tag()
+      if bugLev >= 5: print 'ipython/explore running: dir: %s  is_run: %s' \
+        % (directory, is_run,)
 
   # All jobs without restriction.
   elif args.type == "all": 

@@ -189,6 +189,7 @@ def get_queues(shell, event, pbsargs):
   from ... import debug_queue
   if event.__dict__.get("queue", None) is not None:
     pbsargs["queue"] = event.queue
+  else: pbsargs["queue"] = 'batch'   # default queue
   if event.__dict__.get("account", None) is not None:
     pbsargs["account"] = event.account
   if getattr(event, 'debug', False):

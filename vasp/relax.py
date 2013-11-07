@@ -82,10 +82,17 @@ class RelaxExtract(Extract):
         currently running.
     """
     from os.path import join, exists
-    if exists(join(self.directory, '.pylada_is_running')): return True
-    for value in self.details.itervalues():
-      if value.is_running: return True
-    return False
+    is_run = exists( join(self.directory, '.pylada_is_running'))
+    if bugLev >= 5:
+      print 'vasp/relax: is_running A: dir: %s  is_run: %s' \
+        % (self.directory, is_run,)
+    if not is_run:
+      for value in self.details.itervalues():
+        if value.is_running: is_run = True
+        if bugLev >= 5:
+          print 'vasp/relax: is_running B: value: %s  val.is_running: %s' \
+            % (value, value.is_running,)
+    return is_run
 
 
 def iter_relax( vasp, structure, outdir=None, first_trial=None,

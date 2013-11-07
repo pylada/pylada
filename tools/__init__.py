@@ -212,8 +212,11 @@ def remove_workdir_link(outdir):
 def add_pyladarunning_marker(outdir): 
   """ Creates a marker file in output directory. """
   from os.path import join
+  from pylada.misc import bugLev
   file = open(join(outdir, '.pylada_is_running'), 'w')
   file.close()
+  if bugLev >= 5:
+    print 'tools/init: add_run_mark: is_run outdir: %s' % (outdir,)
 def remove_pyladarunning_marker(outdir): 
   """ Creates a marker file in output directory. """
   from os.path import exists, join
@@ -222,6 +225,8 @@ def remove_pyladarunning_marker(outdir):
   if exists(path): 
     try: remove(path)
     except OSError: pass
+  if bugLev >= 5:
+    print 'tools/init: rem_run_mark: is_run outdir: %s' % (outdir,)
 
 def add_section_to_file(outdir, filename, marker, string, append=True):
   """ Appends a string to an output file. 

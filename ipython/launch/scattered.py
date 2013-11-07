@@ -80,8 +80,8 @@ def launch(self, event, jobfolders):
     with Changedir(directory) as pwd: pass
     # loop over executable folders in current jobfolder
     for name, job in current.root.iteritems():
-      if bugLev >= 1: print "launch/scattered: name: %s  job: %s  tagged: %s" \
-        % (name, job, job.is_tagged,)
+      if bugLev >= 1: print "launch/scattered: current: %s  path: %s  name: %s  job: %s  tagged: %s" \
+        % (current, path, name, job, job.is_tagged,)
       # avoid jobfolder which are off
       if job.is_tagged: continue
       # avoid successful jobs.unless specifically requested
@@ -122,12 +122,40 @@ def launch(self, event, jobfolders):
         print "launch/scattered: string: \"%s\"" % (string,)
         file.write(string)
       assert exists(pbsscripts[-1])
+
+      # exploremod
+      #   import subprocess
+      #   if not event.nolaunch:
+      #   move launch here:
+      #
+      #   if bugLev >= 1:
+      #     print ...
+      #
+      #   proc = subprocess.Popen(
+      #     [qsub_exe, pbsscripts[-1]],
+      #     shell=False,
+      #     cwd=wkDir,
+      #     stdin=subprocess.PIPE,
+      #     stdout=subprocess.PIPE,
+      #     stderr=subprocess.PIPE,
+      #     bufsize=10*1000*1000)
+      #   (stdout, stderr) = proc.communicate()
+      #   parse stdout to get jobNumber
+      #   job.jobNumber = jobNumber
+      #
+      #   if bugLev >= 1:
+      #     print ...
+
     print "Created {0} scattered jobs from {1}.".format(len(pbsscripts), path)
 
   if event.nolaunch: return
   # otherwise, launch.
   for script in pbsscripts:
-    print "launch/scattered: launch script: \"%s\"" % (script,)
+    if bugLev >= 1:
+      print "launch/scattered: launch: shell: %s" % (shell,)
+      print "launch/scattered: launch: qsub_exe: %s" % (qsub_exe,)
+      print "launch/scattered: launch: script: \"%s\"" % (script,)
+ 
     shell.system("{0} {1}".format(qsub_exe, script))
 
 
