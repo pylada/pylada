@@ -982,6 +982,7 @@ class Vasp(AttrBlock):
     from ..crystal import specieset
     from ..misc.changedir import Changedir
     from . import files
+    import os
 
     if bugLev >= 5:
       print "  vasp/functional.Vasp.bringup: structure: ", structure
@@ -1019,6 +1020,7 @@ class Vasp(AttrBlock):
     from os import remove
     from . import files
     from ..misc import Changedir
+    import os
 
     # Appends INCAR and CONTCAR to OUTCAR:
     with Changedir(directory) as pwd:

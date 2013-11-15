@@ -34,6 +34,7 @@ if bugLev >= 1:
   print "test/hi/inputCif: === vasp ===\n%s\n=== end vasp ===" % (vasp,)
 
 vasp.program = os.path.expanduser('~/pyladaExec.sh')   # default vasp program
+vasp.has_nlep = True
 
 vasp.prec       = "accurate"
 vasp.ediff      = 6.0e-5        # total, not per atom

@@ -78,9 +78,11 @@ class LockFile(object):
       # if fails, then another process already created it. Just keep looping.
       except error: 
         self._owns_lock = False
-        if self.timeout is not None:
-          if time.time() - start_time > self.timeout:
-            raise RuntimeError("Could not acquire lock on file {0}.".format(self.filename))
+        # 2013-11-11: disable timeout to make it try forever,
+        # since timeouts are causing large runs to fail.
+        #if self.timeout is not None:
+        #  if time.time() - start_time > self.timeout:
+        #    raise RuntimeError("Could not acquire lock on file {0}.".format(self.filename))
         time.sleep(self.sleep)
 
   def __del__(self):
