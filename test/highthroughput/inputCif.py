@@ -26,6 +26,7 @@ from pylada.crystal.read import icsd_cif_a
 from pylada.crystal.read import icsd_cif_b
 
 from pylada.misc import bugLev
+from pylada.misc import setTestValidProgram
 
 if bugLev >= 1: print "test/hi/inputCif: entry"
 
@@ -35,6 +36,8 @@ if bugLev >= 1:
 
 vasp.program = os.path.expanduser('~/pyladaExec.sh')   # default vasp program
 vasp.has_nlep = True
+setTestValidProgram( None)
+
 
 vasp.prec       = "accurate"
 vasp.ediff      = 6.0e-5        # total, not per atom

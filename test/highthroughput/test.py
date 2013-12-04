@@ -59,12 +59,6 @@ def nonmagnetic_wave(path, inputpath="input.py", **kwargs):
   input.update(kwargs)
 
 
-
-
-
-
-
-
 #  """ Materials to compute. """
 #  materials = [ "Al2MgO4"]
 #

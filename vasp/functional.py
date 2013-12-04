@@ -29,6 +29,7 @@ from ..tools.input import AttrBlock
 from ..misc import add_setter
 from .extract import Extract as ExtractVasp
 from pylada.misc import bugLev
+from pylada.misc import testValidProgram
 
 
 class Vasp(AttrBlock):
@@ -952,17 +953,19 @@ class Vasp(AttrBlock):
     self.bringup(structure, outdir, comm=comm, overwrite=overwrite)
 
     # figures out what program to call.
-    ###program = self.program if self.program is not None else vasp_program
-    program = getattr( self, 'program', None)
-    if program == None:
+    vaspProgram = getattr( self, 'program', None)
+    if vaspProgram == None:
       raise RuntimeError('program was not set in the vasp functional')
 
-    if hasattr(program, '__call__'): program = program(self, structure, comm)
+    if testValidProgram != None: vaspProgram = testValidProgram
+
+    if hasattr(vaspProgram, '__call__'):
+      vaspProgram = vaspProgram(self, structure, comm)
     # creates a process with a callback to bring-down environment once it is
     # done.
     def onfinish(process, error):  self.bringdown(outdir, structure)
     onfail   = self.OnFail(Vasp.Extract(outdir))
-    yield ProgramProcess( program, cmdline=[], outdir=outdir,
+    yield ProgramProcess( vaspProgram, cmdline=[], outdir=outdir,
 			  onfinish=onfinish, onfail=onfail, stdout='stdout',
 			  stderr='stderr', dompi=comm is not None )
     # yields final extraction object.

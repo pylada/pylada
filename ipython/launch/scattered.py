@@ -39,6 +39,7 @@ def launch(self, event, jobfolders):
   from ... import pbs_string, default_pbs, qsub_exe, default_comm
   from . import get_walltime, get_mppalloc, get_queues, scattered_script
   from pylada.misc import bugLev
+  from pylada.misc import testValidProgram
 
   if bugLev >= 1: print "launch/scattered: event: %s" % (event,)
   shell = get_shell(self)
@@ -119,7 +120,12 @@ def launch(self, event, jobfolders):
       with open(pbsscripts[-1], "w") as file:
         string = pbs_string(**pbsargs) if hasattr(pbs_string, '__call__')      \
                  else pbs_string.format(**pbsargs) 
-        print "launch/scattered: string: \"%s\"" % (string,)
+        if bugLev >= 1:
+          print "launch/scattered: ===== start pbsscripts[-1]: %s =====" \
+            % (pbsscripts[-1],)
+          print '%s' % (string,)
+          print "launch/scattered: ===== end pbsscripts[-1]: %s =====" \
+            % (pbsscripts[-1],)
         file.write(string)
       assert exists(pbsscripts[-1])
 
@@ -156,6 +162,7 @@ def launch(self, event, jobfolders):
       print "launch/scattered: launch: qsub_exe: %s" % (qsub_exe,)
       print "launch/scattered: launch: script: \"%s\"" % (script,)
  
+    if testValidProgram != None: qsub_exe = '/bin/bash'
     shell.system("{0} {1}".format(qsub_exe, script))
 
 

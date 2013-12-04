@@ -21,7 +21,7 @@
 ###############################
 
 """ Miscellaneous ressources. """
-__all__ = [ 'bugLev', 'copyfile', 'Changedir',
+__all__ = [ 'bugLev', 'testValidProgram', 'copyfile', 'Changedir',
             'read_input', 'exec_input', 'load',
             'RelativePath', 'LockFile', 'open_exclusive', 'translate_to_regex',
             'mkdtemp', 'Redirect' ]
@@ -37,10 +37,21 @@ bugLev = 0
 global debug level
 """
 
-
 def setBugLev( lev):
   global bugLev
   bugLev = lev
+
+
+
+testValidProgram = None
+"""
+Validation test program name
+"""
+
+def setTestValidProgram( pgm):
+  global testValidProgram
+  testValidProgram = pgm
+
 
 
 def _copyfile_impl(src, dest):

@@ -230,8 +230,7 @@ debug_queue = "queue", "debug"
 """
 
 
-# qsub_exe = "sbatch"
-qsub_exe = "msub"
+qsub_exe = "qsub"
 """ Qsub/sbatch executable. """
 qsub_array_exe = None
 """ Qsub for job arrays.
