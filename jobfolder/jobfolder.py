@@ -286,7 +286,9 @@ class JobFolder(object):
       print 'jobfolder.compute: self: ', self
       print 'jobfolder.compute: kwargs: ', kwargs
       print 'jobfolder.compute: params: ', params
-      print 'jobfolder.compute: self.functional: ', self.functional
+      print 'jobfolder.compute: ===== start self.functional ====='
+      print self.functional
+      print 'jobfolder.compute: ===== end self.functional ====='
       print 'jobfolder.compute: type(self.functional): ', type(self.functional)
       print 'jobfolder.compute: before call'
 

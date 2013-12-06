@@ -226,6 +226,7 @@ class ProgramProcess(Process):
     return False
 
   def start(self, comm=None):
+    self.comm = comm                # used for testValidProgram
     if not self.started: 
       from ..onexit import add_callback
       self._onexit_id = add_callback(self.__class__._onexit_callback, self)
@@ -242,6 +243,7 @@ class ProgramProcess(Process):
     from .. import mpirun_exe, launch_program as launch
     from . import which
     from pylada.misc import bugLev
+    from pylada.misc import testValidProgram
 
     # Open stdout and stderr if necessary.
     with Changedir(self.outdir) as cwd:
@@ -257,7 +259,13 @@ class ProgramProcess(Process):
       self._stdio = file_out, file_err, file_in
 
     # creates commandline
+    if bugLev >= 5:
+      print "process.program: self.program: %s" % (self.program,)
+
     program = which(self.program)
+    if bugLev >= 5:
+      print "process.program: program: %s" % (program,)
+
     if self.dompi: 
       if not hasattr(self, '_comm'):
         raise ValueError( "Requested mpi but without passing communicator"     \
@@ -294,10 +302,23 @@ class ProgramProcess(Process):
         print "process.program: next: no mpi: cmdl: \"%s\"" % (cmdl,)
         print "process.program: next: no mpi: cmdline: \"%s\"" % (cmdline,)
         print "process.program: next: no mpi: comm: %s" % (comm,)
+    if bugLev >= 5:
+      print "process.program: cmdline: %s" % (cmdline,)
+      print "process.program: comm: %s" % (comm,)
+      print "process.program: formatter: %s" % (formatter,)
+      print "process.program: file_out: %s" % (file_out,)
+      print "process.program: file_err: %s" % (file_err,)
+      print "process.program: file_in: %s" % (file_in,)
+      print "process.program: self.outdir: %s" % (self.outdir,)
 
     self.process = launch( cmdline, comm=comm, formatter=formatter,
                            env=environ, stdout=file_out, stderr=file_err,
 			                     stdin=file_in, outdir=self.outdir )
+
+    if testValidProgram != None:
+      self.process.wait()
+
+
 
   def _cleanup(self):
     """ Cleanup files and crap. """
@@ -325,9 +346,10 @@ class ProgramProcess(Process):
 
   def wait(self):
     """ Waits for process to end, then cleanup. """
-    super(ProgramProcess, self).wait()
-    self.process.wait()
-    self.poll()
+    if self.comm != None:                # used for testValidProgram
+      super(ProgramProcess, self).wait()
+      self.process.wait()
+      self.poll()
 
   def _onexit_callback(self):
     """ Registers callback for killing a process. """

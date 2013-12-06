@@ -845,6 +845,7 @@ class Vasp(AttrBlock):
     if bugLev >= 5:
       print "  vasp/functional: call: structure: ", structure
       print "  vasp/functional: call: outdir: ", outdir
+      print "  vasp/functional: call: comm: ", comm
     for program in self.iter(structure, outdir=outdir, comm=comm, overwrite=overwrite, **kwargs):
       # iterator may yield the result from a prior successful run. 
       if getattr(program, 'success', False): continue
@@ -853,9 +854,12 @@ class Vasp(AttrBlock):
       # otherwise, it should yield a Program process to execute.
       # This next line starts the asynchronous call to the external VASP
       # program.
+      print "  vasp/functional: xxxxxxxxxxx before start"
       program.start(comm)
       # This next lines waits until the VASP program is finished.
+      print "  vasp/functional: xxxxxxxxxxx before wait"
       program.wait()
+      print "  vasp/functional: xxxxxxxxxxx after wait"
     # Last yield should be an extraction object.
     if not program.success:
       raise RuntimeError("Vasp failed to execute correctly.")
@@ -954,6 +958,9 @@ class Vasp(AttrBlock):
 
     # figures out what program to call.
     vaspProgram = getattr( self, 'program', None)
+    if bugLev >= 5:
+      print '  vasp/functional.iter: vaspProgram: %s' % (vaspProgram,)
+      print '  vasp/functional.iter: testValidProgram: %s' % (testValidProgram,)
     if vaspProgram == None:
       raise RuntimeError('program was not set in the vasp functional')
 
@@ -988,9 +995,9 @@ class Vasp(AttrBlock):
     import os
 
     if bugLev >= 5:
-      print "  vasp/functional.Vasp.bringup: structure: ", structure
-      print "  vasp/functional.Vasp.bringup: outdir: ", outdir
-      print "  vasp/functional.Vasp.bringup: kwargs: ", kwargs
+      print '  vasp/functional.Vasp.bringup: structure: ', structure
+      print '  vasp/functional.Vasp.bringup: outdir: ', outdir
+      print '  vasp/functional.Vasp.bringup: kwargs: ', kwargs
 
     with Changedir(outdir) as tmpdir:
       # creates INCAR file (and POSCAR via istruc).

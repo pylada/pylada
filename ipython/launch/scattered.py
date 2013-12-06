@@ -62,7 +62,7 @@ def launch(self, event, jobfolders):
   # gets python script to launch in pbs.
   pyscript = scattered_script.__file__
   if bugLev >= 1: print "launch/scattered: pyscript: %s" % (pyscript,)
-  if pyscript[-1] == 'c': pyscript = pyscript[:-1]
+  if pyscript[-1] == 'c': pyscript = pyscript[:-1]   # change .pyc to .py
 
   # creates file names.
   hasprefix = getattr(event, "prefix", None)                               
@@ -105,9 +105,10 @@ def launch(self, event, jobfolders):
                         else "{0}-root".format(basename(path))
       pbsargs['directory'] = directory
       pbsargs['bugLev'] = bugLev
+      pbsargs['testValidProgram'] = testValidProgram
       
       pbsargs['scriptcommand']                                                 \
-           = "{0} --bugLev {bugLev} --nbprocs {n} --ppn {ppn} --jobid={1} {2}"                   \
+           = "{0} --bugLev {bugLev} --testValidProgram {testValidProgram} --nbprocs {n} --ppn {ppn} --jobid={1} {2}"                   \
              .format(pyscript, name, path, **pbsargs)
       ppath = pbspaths(directory, name, 'script')
       print "launch/scattered: ppath: \"%s\"" % (ppath,)
@@ -162,8 +163,12 @@ def launch(self, event, jobfolders):
       print "launch/scattered: launch: qsub_exe: %s" % (qsub_exe,)
       print "launch/scattered: launch: script: \"%s\"" % (script,)
  
-    if testValidProgram != None: qsub_exe = '/bin/bash'
-    shell.system("{0} {1}".format(qsub_exe, script))
+    if testValidProgram != None:
+      shell.system('python ' + pbsargs['scriptcommand'])
+    else:
+      # qsub pbsscript (template is in config/mpi.py: pbs_string),
+      # which sets up modules and invokes: python {scriptcommand}
+      shell.system("{0} {1}".format(qsub_exe, script))
 
 
 def completer(self, info, data):

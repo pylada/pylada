@@ -42,7 +42,7 @@ setTestValidProgram( None)
 vasp.prec       = "accurate"
 vasp.ediff      = 6.0e-5        # total, not per atom
 vasp.encut      = 340.0
-vasp.npar       = 1
+vasp.npar       = 8
 vasp.ncore      = 1
 vasp.lplane     = True
 

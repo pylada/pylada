@@ -36,6 +36,9 @@ def main():
 
   parser.add_argument('--bugLev', dest="bugLev", default=0, type=int,\
                       help="Debug level.")
+  parser.add_argument('--testValidProgram', dest="testValidProgram",
+                      default=None, type=str,
+                      help="testValidProgram")
   parser.add_argument( "--jobid", dest="names", nargs='+', type=str, \
                        help="Job name", metavar="N" )
   parser.add_argument( "--ppath", dest="ppath", default=None, \
@@ -58,6 +61,12 @@ def main():
   setBugLev( options.bugLev)         # set global debug level
   from pylada.misc import bugLev     # must import after calling setBugLev
 
+  from pylada.misc import setTestValidProgram
+  tstPgm = options.testValidProgram
+  if tstPgm.lower() == 'none': tstPgm = None
+  setTestValidProgram( tstPgm)
+  from pylada.misc import testValidProgram
+
   # additional path to look into.
   if options.ppath is not None: python_path.append(options.ppath)
 
@@ -68,7 +77,10 @@ def main():
   # Set up mpi processes.
   pylada.default_comm['ppn'] = options.ppn
   pylada.default_comm['n'] = options.nbprocs
-  create_global_comm(options.nbprocs)
+  if testValidProgram == None:
+    create_global_comm(options.nbprocs)   # Sets pylada.default_comm
+  else:
+    pylada.default_comm = None            # use testValidProgram
 
   timeout = None if options.timeout <= 0 else options.timeout
   
@@ -77,6 +89,8 @@ def main():
   print '  ipy/lau/scattered_script: options: ', options
   for name in options.names:
     if bugLev >= 1:
+      print '  ipy/lau/scattered_script: testValidProgram: %s' \
+        % ( testValidProgram,)
       print '  ipy/lau/scattered_script: name: %s' % ( name,)
       print '  ipy/lau/scattered_script: jobfolder[name]: %s' \
         % ( jobfolder[name],)
@@ -89,7 +103,10 @@ def main():
       print '  ipy/lau/scattered_script: before compute for name: %s' \
         % ( name,)
 
-    jobfolder[name].compute(comm=pylada.default_comm, outdir=name)
+
+    comm = pylada.default_comm
+    if testValidProgram != None: comm = None
+    jobfolder[name].compute(comm=comm, outdir=name)
     if bugLev >= 1:
       print '  ipy/lau/scattered_script: after compute for name: %s' \
         % ( name,)

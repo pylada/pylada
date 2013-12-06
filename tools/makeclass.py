@@ -229,7 +229,10 @@ def create_call_from_iter(iter, excludes):
     iterargs.append('comm=comm')
   if args.keywords is not None: iterargs.append("**" + args.keywords)
   result += "  result  = None\n"                                               \
+            "  print 'tools/makeclass: create_call_from_iter: comm: ', comm\n" \
             "  for program in self.iter({0}):\n"                               \
+            "    print 'tools/makeclass: create_call_from_iter: program: ', program\n" \
+            "    print 'tools/makeclass: create_call_from_iter: type(program): ', type(program)\n" \
             "    if getattr(program, 'success', False):\n"                     \
             "      result = program\n"                                         \
             "      continue\n"                                                 \
@@ -433,6 +436,7 @@ def makefunc(name, iter, module=None):
         .format(first_line, iter)
   # create function body...
   funcstring += "  from {0.__module__} import {0.func_name}\n"\
+                "  print 'tools/makeclass: makefunc: comm: ', comm\n"\
                 "  for program in {0.func_name}(".format(iter)
   # ... including detailed call to iterator function.
   iterargs = []
@@ -449,8 +453,17 @@ def makefunc(name, iter, module=None):
                 "    program.start(comm)\n"                                    \
                 "    program.wait()\n"                                         \
                 "  return result".format(', '.join(iterargs))
+  if bugLev >= 1:
+    print 'tools/makeclass: makefunc: ===== funcstring start ====='
+    print funcstring
+    print 'tools/makeclass: makefunc: ===== funcstring end ====='
+
   funcs = {}
   exec funcstring in funcs
+  if bugLev >= 1:
+    print 'tools/makeclass: makefunc: after call funcstring'
+    print 'tools/makeclass: makefunc: funcs: ', funcs
+
   if module is not None:  funcs[name].__module__ = module
   if bugLev >= 1:
     print 'tools/makeclass: makefunc: name: \"%s\"' % (name,)
