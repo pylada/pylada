@@ -49,8 +49,10 @@ Validation test program name
 """
 
 def setTestValidProgram( pgm):
+  import os
   global testValidProgram
-  testValidProgram = pgm
+  if pgm == None: testValidPgm = None
+  else: testValidProgram = os.path.expanduser( pgm)
 
 
 

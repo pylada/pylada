@@ -30,6 +30,8 @@ from pylada.misc import setTestValidProgram
 
 if bugLev >= 1: print "test/hi/inputCif: entry"
 
+useInputCif = True          # flag used by test.py
+
 vasp = Relax()
 if bugLev >= 1:
   print "test/hi/inputCif: === vasp ===\n%s\n=== end vasp ===" % (vasp,)

@@ -1,0 +1,11 @@
+{
+  "absEpsilon":   "1.e-8",
+  "relEpsilon":   "1.e-8",
+  "refRoot":      "~/pylada/testValid/icsd_633029/reference",
+  "workRoot":     "~/pylada/testValid/icsd_633029/temp.test",
+  "inFiles":      "INCAR,KPOINTS,POSCAR,POTCAR",
+  "outFiles":     "",
+  "logFile":      "~/pylada/testValid/icsd_633029/temp.test/log"
+}
+
+
