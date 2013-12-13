@@ -248,15 +248,23 @@ def magnetic_wave( path=None, inputpath='input.py', **kwargs):
       print "test/hi/test.mag: basename: %s" % (basename,)
     if relpath(name, basename[1:]) != nonmagname: continue
     # check for success and avoid failures.
-    extract = nonmagjob.functional.Extract(join(basedir, name)) 
+    extractPath = join(basedir, name)
+    extract = nonmagjob.functional.Extract( extractPath)
     if bugLev >= 1:
-      print "test/hi/test.mag: extract: %s" % (extract,)
+      print "test/hi/test.mag: extractPath: %s" % (extractPath,)
       print "test/hi/test.mag: extract.success: %s" % (extract.success,)
+      print "test/hi/test.mag: extract: %s" % (extract,)
+      print "test/hi/test.mag: dir(extract): %s" % (dir(extract),)
     if not extract.success: continue
 
     if bugLev >= 1:
+      print 'test/hi/test.mag ========== A'
       print "test/hi/test.mag: nonmag structure: %s" % (nonmagjob.structure,)
+      print 'test/hi/test.mag ========== B'
+      print "test/hi/test.mag: extract.structure: %s" % (extract.structure,)
+      print 'test/hi/test.mag ========== C'
       print "test/hi/test.mag: extract.species: %s" % (extract.species,)
+      print 'test/hi/test.mag ========== D'
 
     if not is_magnetic_system(extract.structure, extract.functional.species):
       continue

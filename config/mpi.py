@@ -133,6 +133,7 @@ def launch_program( cmdl, comm=None, formatter=None, env=None,
   from pylada import machine_dependent_call_modifier
   from pylada.misc import Changedir
   from pylada.misc import bugLev
+  from pylada.misc import testValidProgram
 
   if bugLev >= 5:
     print "config/mpi: launch_program: entry"
@@ -189,7 +190,7 @@ def launch_program( cmdl, comm=None, formatter=None, env=None,
   if bugLev >= 1:
     print "config/mpi: launch_program: popen: %s" % (popen,)
     print "config/mpi: launch_program: popen.pid: %s" % (popen.pid,)
-
+  if testValidProgram: popen.wait()
   return popen
 
 

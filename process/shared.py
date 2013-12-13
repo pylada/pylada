@@ -39,6 +39,8 @@ class SharedJobFolderProcess(IteratorProcess):
     from shlex import split as split_cmd
     from misc import Changedir
     from . import Program
+    from pylada.misc import testValidProgram
+
     # check if we have currently running process.
     # if current process is finished running, closes stdout and stdout.
     if self.current_program[0] is not None: 
@@ -75,4 +77,5 @@ class SharedJobFolderProcess(IteratorProcess):
     # now create process.
     program = Program(program.program, program.cmdline, program.directory, fileout, filerr)
     process = Popen(split_cmd(cmd), stdout=file_out, stderr=file_err, cwd=program.directory)
+    if testValidProgram: process.wait()
     self.current_program = process, program

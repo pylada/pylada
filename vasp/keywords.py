@@ -1001,14 +1001,18 @@ class Relaxation(BaseKeyword):
       if 'cell' in value or 'cellshape' in value or 'cell-shape' in value: 
         result.append('cellshape')
       if 'volume' in value: result.append('volume')
+      #if 'gwmod in value: result.append('gwmod')
+
     result = ', '.join(result)
 
     # static case
     if len(result) == 0:
+    # if len(result) == 0 or result == ['gwmod']:
       instance.nsw = 0
       if instance.ibrion is not None: instance.ibrion = -1
       if instance.isif is not None:
         if instance.isif > 2: instance.isif = 2
+      #gwmod = 'gwmod' in result
       return
     
     # non-static

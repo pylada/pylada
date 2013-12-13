@@ -244,7 +244,7 @@ def iter_relax( vasp, structure, outdir=None, first_trial=None,
     vasp.relaxation = relaxation
     relaxation = relaxation[0]
   if bugLev >= 5:
-    # Shows: cellshape ionic volume
+    # Shows: cellshape ionic volume, type: str
     print "vasp/relax: iter_relax: relaxation b: %s  type: %s\n" \
       % (relaxation, type(relaxation),)
   # cellshape ionic volume
@@ -332,7 +332,79 @@ def iter_relax( vasp, structure, outdir=None, first_trial=None,
       print "vasp/relax: iter_relax: relax ionic isConv: %s" % (isConv,)
     if isConv: break;
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   # gwmod: same while loop as above, but with relaxation="gw"
+  # performs gwcalc calculation, at most once
+  if bugLev >= 5:
+    print "vasp/relax: iter_relax: start gwcalc"
+  if (maxcalls <= 0 or nb_steps < maxcalls + 1) \
+    and relaxation.find("gwcalc") != -1:
+
+    if bugLev >= 5:
+      print "vasp/relax: iter_relax: relax gwcalc start"
+    for u in vasp.iter\
+      (\
+        relaxed_structure, 
+        outdir = join(outdir, join("relax_gwcalc", str(nb_steps))),
+        relaxation = "gwcalc",
+        restart = output,
+        **params
+      ):
+      if bugLev >= 5:
+        # Shows a pair:
+        #   <pylada.process.program.ProgramProcess object at 0x2651fd0>
+        #   Extract(".../non-magnetic/relax_gwcalc/3")
+        print "vasp/relax: iter_relax: relax gwcalc yield u: %s" % (u,)
+      yield u
+
+    output = vasp.Extract(join(outdir, join("relax_gwcalc", str(nb_steps))))
+    if bugLev >= 5:
+      # Shows:  Extract(".../non-magnetic/relax_gwcalc/3")
+      print "vasp/relax: iter_relax: relax gwcalc output: %s" % (output,)
+    if not output.success: ExternalRunFailed("VASP calculations did not complete.")
+    relaxed_structure = output.structure
+
+    nb_steps += 1
+    if bugLev >= 5:
+      # Shows 4 (3 for cellshape, 1 for gwcalc)
+      print "vasp/relax: iter_relax: relax gwcalc nb_steps: %s" % (nb_steps,)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   # Does not perform static calculation if convergence not reached.
   if nofail == False and is_converged(output) == False: 
@@ -389,6 +461,10 @@ if bugLev >= 5:
   print "  vasp/relax: relax: ", relax
   print "  vasp/relax: Relax: ", Relax
 
+
+
+
+
 def _get_is_converged(vasp, structure, convergence=None, minrelsteps=-1, **kwargs):
   """ Returns convergence function. """
   from ..error import ExternalRunFailed
@@ -424,6 +500,8 @@ def _get_is_converged(vasp, structure, convergence=None, minrelsteps=-1, **kwarg
       if minrelsteps > 0 and minrelsteps > i: return False
       return all(max(abs(extractor.forces)) < abs(convergence))
   return is_converged
+
+
 
 def iter_epitaxial(vasp, structure, outdir=None, direction=[0,0,1], epiconv = 1e-4,
                    initstep=0.05, **kwargs):

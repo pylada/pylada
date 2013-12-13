@@ -254,6 +254,7 @@ class ExtractBase(object):
   @make_cached
   def structure(self):
     """ Greps structure and total energy from OUTCAR. """
+    if bugLev >= 5: print 'vasp/extract/base: structure: self: %s' % (self,)
     if self.nsw == 0 or self.ibrion == -1:
       return self.initial_structure
 

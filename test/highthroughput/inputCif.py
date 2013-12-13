@@ -52,7 +52,6 @@ vasp.addgrid    = True
 vasp.ismear     = "gaussian"
 vasp.sigma      = 0.01
 vasp.isym       = 0
-vasp.relaxation = "ionic"
 vasp.set_symmetries = "off"
 vasp.kpoints        = "\n0\nAuto\n20"
 vasp.lorbit         = 10
