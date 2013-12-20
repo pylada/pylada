@@ -440,32 +440,37 @@ def iter_relax( vasp, structure, outdir=None, first_trial=None,
     print "vasp/relax: iter_relax: static output: %s" % (output,)
   if not output.success: ExternalRunFailed("VASP calculations did not complete.")
 
+  # nomodoutcar
   # replace initial structure with that with which this function was called.
-  with output.__outcar__() as file:
-    filename = file.name
-    string = sub(  '#+ INITIAL STRUCTURE #+\n((.|\n)*)\n#+ END INITIAL STRUCTURE #+',
-                   """################ INITIAL STRUCTURE ################\n"""\
-                   """from {0.__class__.__module__} import {0.__class__.__name__}\n"""\
-                   """structure = {1}\n"""\
-                   """################ END INITIAL STRUCTURE ################\n"""\
-                   .format(structure, repr(structure).replace('\n', '\n            ')),
-                   file.read() )
-  with open(filename, 'w') as file: file.write(string)
-  if bugLev >= 1:
-    print 'vasp/relax iter_relax static: cwd: ', getcwd()
-    print 'vasp.iter_relax: filename: \"%s\"' % (filename,)
-    print 'vasp/relax iter_relax static: write initial structure:\n%s' \
-      % (structure,)
-    print 'vasp.iter_relax: initial structure written'
-    print 'vasp.iter_relax: ===== string start ====='
-    print string
-    print 'vasp.iter_relax: ===== string end ====='
+  #with output.__outcar__() as file:
+  #  filename = file.name
+  #  string = sub(  '#+ INITIAL STRUCTURE #+\n((.|\n)*)\n#+ END INITIAL STRUCTURE #+',
+  #                 """################ INITIAL STRUCTURE ################\n"""\
+  #                 """from {0.__class__.__module__} import {0.__class__.__name__}\n"""\
+  #                 """structure = {1}\n"""\
+  #                 """################ END INITIAL STRUCTURE ################\n"""\
+  #                 .format(structure, repr(structure).replace('\n', '\n            ')),
+  #                 file.read() )
+  #with open(filename, 'w') as file: file.write(string)
+  #if bugLev >= 1:
+  #  print 'vasp/relax iter_relax static: cwd: ', getcwd()
+  #  print 'vasp.iter_relax: filename: \"%s\"' % (filename,)
+  #  print 'vasp/relax iter_relax static: write initial structure:\n%s' \
+  #    % (structure,)
+  #  print 'vasp.iter_relax: initial structure written'
+  #  print 'vasp.iter_relax: ===== string start ====='
+  #  print string
+  #  print 'vasp.iter_relax: ===== string end ====='
+
 
   if output.success and (not keepsteps):
     rmtree(join(outdir, "cellshape"))
     rmtree(join(outdir, "ions"))
+
   # yields final extraction object.
   yield iter_relax.Extract(outdir)
+
+
 
 iter_relax.Extract = RelaxExtract
 """ Extraction method for relaxation runs. """

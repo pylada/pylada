@@ -256,6 +256,7 @@ def magnetic_wave( path=None, inputpath='input.py', **kwargs):
       print "test/hi/test.mag: extract.success: %s" % (extract.success,)
       print "test/hi/test.mag: extract: %s" % (extract,)
       print "test/hi/test.mag: dir(extract): %s" % (dir(extract),)
+      print "test/hi/test.mag: extract.functional: %s" % (extract.functional,)
     if not extract.success: continue
 
     if bugLev >= 1:

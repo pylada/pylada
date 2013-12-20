@@ -82,6 +82,7 @@ class ExtractBase(object):
     return float(self._find_first_OUTCAR(r"ENCUT\s*=\s*(\S+)").group(1)) * eV
 
 
+
   @property
   @make_cached
   def functional(self):
@@ -96,18 +97,37 @@ class ExtractBase(object):
     from .. import Vasp
     from re import compile
     from .. import exec_input
-    regex = compile('#+ FUNCTIONAL #+\n((.|\n)*)\n#+ END FUNCTIONAL #+')
-    with self.__outcar__() as file: result = regex.search(file.read())
-    if result is None: return None
+
+    # nomodoutcar
+    #regex = compile('#+ FUNCTIONAL #+\n((.|\n)*)\n#+ END FUNCTIONAL #+')
+    #with self.__outcar__() as file: result = regex.search(file.read())
+    #if result is None: return None
+
+    with open('pylada.FUNCTIONAL') as fin:
+      result = fin.read()
+
     # Bad hack. Some derived object will have different names...
     # Hopefully, there shouldn't be too many objects and this should be fairly
     # fast.
-    input = exec_input(result.group(1))
+    input = exec_input( result)
+    if bugLev >= 5:
+      print 'extract/base functional: ===== start result'
+      print result
+      print 'extract/base functional: ===== end result'
+      print 'extract/base functional: ===== start input'
+      print input
+      print 'extract/base functional: ===== end input'
+      print 'extract/base functional: ===== start input.vasp'
+      print input.vasp
+      print 'extract/base functional: ===== end input.vasp'
+
     for name in dir(input):
       if isinstance(getattr(input, name), Vasp): return getattr(input, name)
     # otherwise, just try the objvious. but it really should fail at this
     # point.
-    return exec_input(result.group(1)).vasp
+    return input.vasp
+
+
 
   @property
   def success(self):
@@ -173,15 +193,16 @@ class ExtractBase(object):
     from .. import exec_input
     from pylada.misc import bugLev
 
-    try:
-      regex = compile('#+ INITIAL STRUCTURE #+\n((.|\n)*)\n#+ END INITIAL STRUCTURE #+')
-      result = None
-      with self.__outcar__() as file:
-        result = regex.search(file.read(), M)
-      if bugLev >= 5:
-        print 'vasp/extract/base: initial_structure: result: ', result
-      if result is not None: return exec_input(result.group(1)).structure
-    except: pass
+    # nomodoutcar
+    #try:
+    #  regex = compile('#+ INITIAL STRUCTURE #+\n((.|\n)*)\n#+ END INITIAL STRUCTURE #+')
+    #  result = None
+    #  with self.__outcar__() as file:
+    #    result = regex.search(file.read(), M)
+    #  if bugLev >= 5:
+    #    print 'vasp/extract/base: initial_structure: result: ', result
+    #  if result is not None: return exec_input(result.group(1)).structure
+    #except: pass
 
     result = Structure()
     with self.__outcar__() as file:
@@ -206,23 +227,24 @@ class ExtractBase(object):
           result.add_atom(pos=dot(result.cell, array(data, dtype='float64')), type=specie)
     return result
 
-  @property
-  def _catted_contcar(self):
-    """ Returns contcar found at end of OUTCAR. """
-    from re import compile
-    from StringIO import StringIO
-    from ...crystal import read
-    with self.__outcar__() as file: lines = file.readlines()
-    begin_contcar_re = compile(r"""#+\s+CONTCAR\s+#+""")
-    end_contcar_re = compile(r"""#+\s+END\s+CONTCAR\s+#+""")
-    start, end = None, None
-    for i, line in enumerate(lines[::-1]):
-      if begin_contcar_re.match(line) is not None: start = -i; break;
-      if end_contcar_re.match(line) is not None: end = -i
-    if start is None or end is None:
-      raise IOError("Could not find catted contcar.")
-    stringio = StringIO("".join(lines[start:end if end != 0 else -1]))
-    return read.poscar(stringio, self.species)
+  # nomodoutcar
+  #@property
+  #def _catted_contcar(self):
+  #  """ Returns contcar found at end of OUTCAR. """
+  #  from re import compile
+  #  from StringIO import StringIO
+  #  from ...crystal import read
+  #  with self.__outcar__() as file: lines = file.readlines()
+  #  begin_contcar_re = compile(r"""#+\s+CONTCAR\s+#+""")
+  #  end_contcar_re = compile(r"""#+\s+END\s+CONTCAR\s+#+""")
+  #  start, end = None, None
+  #  for i, line in enumerate(lines[::-1]):
+  #    if begin_contcar_re.match(line) is not None: start = -i; break;
+  #    if end_contcar_re.match(line) is not None: end = -i
+  #  if start is None or end is None:
+  #    raise IOError("Could not find catted contcar.")
+  #  stringio = StringIO("".join(lines[start:end if end != 0 else -1]))
+  #  return read.poscar(stringio, self.species)
 
   @property
   @make_cached
@@ -270,12 +292,9 @@ class ExtractBase(object):
     if self.nsw == 0 or self.ibrion == -1:
       return self.initial_structure
 
-    try: result = self._catted_contcar;
+    try: result = self._contcar_structure
     except:
-      result = self._contcar_structure
-      try: result = self._contcar_structure
-      except:
-        result = self._grep_structure
+      result = self._grep_structure
     if bugLev >= 5:
       print 'vasp/extract/base: structure: result: %s' % (result,)
 
