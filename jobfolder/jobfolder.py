@@ -292,6 +292,8 @@ class JobFolder(object):
       print 'jobfolder.compute: type(self.functional): ', type(self.functional)
       print 'jobfolder.compute: before call'
 
+    # This calls the dynamically compiled code
+    # created by tools/makeclass: create_call_from_iter
     res = self.functional.__call__(**params)
     if bugLev >= 1:
       print 'jobfolder.compute: after call'

@@ -37,6 +37,9 @@ class ExtractBase(object):
 
   def __init__(self):
     """ Initializes the extraction class. """
+    from pylada.misc import bugLev
+
+    if bugLev >= 5: print 'vasp/extract/base: ExtractBase: object: ', object
     super(ExtractBase, self).__init__()
 
   @property
@@ -168,10 +171,15 @@ class ExtractBase(object):
     from numpy.linalg import inv
     from ...crystal import Structure
     from .. import exec_input
+    from pylada.misc import bugLev
 
     try:
       regex = compile('#+ INITIAL STRUCTURE #+\n((.|\n)*)\n#+ END INITIAL STRUCTURE #+')
-      with self.__outcar__() as file: result = regex.search(file.read(), M)
+      result = None
+      with self.__outcar__() as file:
+        result = regex.search(file.read(), M)
+      if bugLev >= 5:
+        print 'vasp/extract/base: initial_structure: result: ', result
       if result is not None: return exec_input(result.group(1)).structure
     except: pass
 
@@ -253,8 +261,12 @@ class ExtractBase(object):
   @property
   @make_cached
   def structure(self):
+    from pylada.misc import bugLev
+
     """ Greps structure and total energy from OUTCAR. """
-    if bugLev >= 5: print 'vasp/extract/base: structure: self: %s' % (self,)
+    if bugLev >= 5:
+      print 'vasp/extract/base: structure: nsw: %s  ibrion: %s' \
+        % (self.nsw, self.ibrion,)
     if self.nsw == 0 or self.ibrion == -1:
       return self.initial_structure
 
@@ -264,6 +276,8 @@ class ExtractBase(object):
       try: result = self._contcar_structure
       except:
         result = self._grep_structure
+    if bugLev >= 5:
+      print 'vasp/extract/base: structure: result: %s' % (result,)
 
     # tries to find adequate name for structure.
     try: name = self.system
@@ -273,6 +287,9 @@ class ExtractBase(object):
       except GrepError: title = ''
       if len(title) != 0: result.name = title
     else: result.name = name
+    if bugLev >= 5:
+      print 'vasp/extract/base: structure: name: %s  result.name: %s' \
+        % (name, result.name,)
 
     if self.is_dft: result.energy = self.total_energy
 
@@ -284,12 +301,18 @@ class ExtractBase(object):
       for a, b in zip(result, initial):
         for key, value in b.__dict__.iteritems():
           if not hasattr(a, key): setattr(a, key, value)
+    if bugLev >= 5:
+      print 'vasp/extract/base: structure: initial: %s' % (initial,)
+
     # adds magnetization.
     try: magnetization = self.magnetization
     except: pass
     else:
       if magnetization is not None:
         for atom, mag in zip(result, magnetization): atom.magmom = sum(mag)
+    if bugLev >= 5:
+      print 'vasp/extract/base: structure: magnetization: %s' % (magnetization,)
+
     # adds stress.
     try: result.stress = self.stress
     except: pass

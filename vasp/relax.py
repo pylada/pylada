@@ -200,10 +200,9 @@ def iter_relax( vasp, structure, outdir=None, first_trial=None,
     #     ...
     #     relax.species        = {'Ni': Specie(...), ...}
     print "vasp/relax: iter_relax: vasp.__dict__: %s" % (vasp.__dict__,)
-
-    print "vasp/relax: iter_relax: structure: %s" % (structure,)
+    print "vasp/relax: iter_relax: initial outdir: %s" % (outdir,)
+    print "vasp/relax: iter_relax: structure:\n%s" % (structure,)
     print "vasp/relax: iter_relax: type(structure): %s" % (type(structure),)
-    print "vasp/relax: iter_relax: outdir: %s" % (outdir,)
 
   # make this function stateless.
   vasp = deepcopy(vasp)
@@ -211,7 +210,7 @@ def iter_relax( vasp, structure, outdir=None, first_trial=None,
   if first_trial is None: first_trial = {}
   outdir = getcwd() if outdir is None else RelativePath(outdir).path
   if bugLev >= 5:
-    print "vasp/relax: iter_relax: new outdir: %s\n" % (outdir,)
+    print "vasp/relax: iter_relax: final outdir: %s\n" % (outdir,)
   # .../mos2_024000/mos2_024000.cif/non-magnetic
 
   # convergence criteria and behavior.
@@ -249,7 +248,11 @@ def iter_relax( vasp, structure, outdir=None, first_trial=None,
       % (relaxation, type(relaxation),)
   # cellshape ionic volume
 
+
   # performs relaxation calculations.
+  if bugLev >= 5:
+    print "vasp/relax: iter_relax: beg cellshape.  nb_steps: %d  maxcalls: %d" \
+      % (nb_steps, maxcalls,)
   while (maxcalls <= 0 or nb_steps < maxcalls) and relaxation.find("cellshape") != -1:
     if bugLev >= 5:
       # Once per output dir like .../relax_cellshape/0, 1, 2, ...
@@ -258,10 +261,11 @@ def iter_relax( vasp, structure, outdir=None, first_trial=None,
     # Invokes vasp/functional.Vasp.__init__
     # and vasp/functional: iter, which calls bringup,
     # which calls write_incar, write_kpoints, etc.
+    fulldir = join(outdir, join("relax_cellshape", str(nb_steps)))
     for u in vasp.iter\
       (\
         relaxed_structure,
-        outdir = join(outdir, join("relax_cellshape", str(nb_steps))),
+        outdir = fulldir,
         restart = output,
         relaxation = relaxation,
         **params
@@ -270,7 +274,8 @@ def iter_relax( vasp, structure, outdir=None, first_trial=None,
         # For each iteration of the outer while loop, shows one pair:
         #   <pylada.process.program.ProgramProcess object at 0x1569f50>
         #   Extract("/.../non-magnetic/relax_cellshape/0, 1, 2, ...")
-        print "vasp/relax: iter_relax: relax cellshape yield u: %s" % (u,)
+        print "vasp/relax: iter_relax: cellshape: fulldir: %s  yield u: %s" \
+          % (fulldir, u,)
       yield u
 
     output = vasp.Extract(join(outdir, join("relax_cellshape", str(nb_steps))))
@@ -289,20 +294,24 @@ def iter_relax( vasp, structure, outdir=None, first_trial=None,
       print "vasp/relax: iter_relax: relax cellshape isConv: %s" % (isConv,)
     if isConv: break;
 
+
+
   # Does not perform ionic calculation if convergence not reached.
   if nofail == False and is_converged(output) == False: 
     raise ExternalRunFailed("Could not converge cell-shape in {0} iterations.".format(maxcalls))
 
   # performs ionic calculation. 
   if bugLev >= 5:
-    print "vasp/relax: iter_relax: start ionic calc"
+    print "vasp/relax: iter_relax: beg ionic.  nb_steps: %d  maxcalls: %d" \
+      % (nb_steps, maxcalls,)
   while (maxcalls <= 0 or nb_steps < maxcalls + 1) and relaxation.find("ionic") != -1:
     if bugLev >= 5:
       print "vasp/relax: iter_relax: relax ionic loop head"
+    fulldir = join(outdir, join("relax_ions", str(nb_steps)))
     for u in vasp.iter\
       (\
         relaxed_structure, 
-        outdir = join(outdir, join("relax_ions", str(nb_steps))),
+        outdir = fulldir,
         relaxation = "ionic",
         restart = output,
         **params
@@ -311,7 +320,8 @@ def iter_relax( vasp, structure, outdir=None, first_trial=None,
         # Shows a pair:
         #   <pylada.process.program.ProgramProcess object at 0x2651fd0>
         #   Extract(".../non-magnetic/relax_ions/3")
-        print "vasp/relax: iter_relax: relax ionic yield u: %s" % (u,)
+        print "vasp/relax: iter_relax: ions fulldir: %s  yield u: %s" \
+          % (fulldir, u,)
       yield u
 
     output = vasp.Extract(join(outdir, join("relax_ions", str(nb_steps))))
@@ -351,19 +361,21 @@ def iter_relax( vasp, structure, outdir=None, first_trial=None,
 
 
 
-  # gwmod: same while loop as above, but with relaxation="gw"
+  # gwmod: same while loop as above, but with relaxation="gwcalc"
   # performs gwcalc calculation, at most once
   if bugLev >= 5:
-    print "vasp/relax: iter_relax: start gwcalc"
-  if (maxcalls <= 0 or nb_steps < maxcalls + 1) \
+    print "vasp/relax: iter_relax: beg gwcalc.  nb_steps: %d  maxcalls: %d" \
+      % (nb_steps, maxcalls,)
+  if (maxcalls <= 0 or nb_steps < maxcalls + 2) \
     and relaxation.find("gwcalc") != -1:
 
     if bugLev >= 5:
       print "vasp/relax: iter_relax: relax gwcalc start"
+    fulldir = join(outdir, join("relax_gwcalc", str(nb_steps)))
     for u in vasp.iter\
       (\
         relaxed_structure, 
-        outdir = join(outdir, join("relax_gwcalc", str(nb_steps))),
+        outdir = fulldir,
         relaxation = "gwcalc",
         restart = output,
         **params
@@ -372,7 +384,8 @@ def iter_relax( vasp, structure, outdir=None, first_trial=None,
         # Shows a pair:
         #   <pylada.process.program.ProgramProcess object at 0x2651fd0>
         #   Extract(".../non-magnetic/relax_gwcalc/3")
-        print "vasp/relax: iter_relax: relax gwcalc yield u: %s" % (u,)
+        print "vasp/relax: iter_relax: gwcalc fulldir: %s  yield u: %s" \
+          % (fulldir, u,)
       yield u
 
     output = vasp.Extract(join(outdir, join("relax_gwcalc", str(nb_steps))))
@@ -439,7 +452,11 @@ def iter_relax( vasp, structure, outdir=None, first_trial=None,
                    file.read() )
   with open(filename, 'w') as file: file.write(string)
   if bugLev >= 1:
+    print 'vasp/relax iter_relax static: cwd: ', getcwd()
     print 'vasp.iter_relax: filename: \"%s\"' % (filename,)
+    print 'vasp/relax iter_relax static: write initial structure:\n%s' \
+      % (structure,)
+    print 'vasp.iter_relax: initial structure written'
     print 'vasp.iter_relax: ===== string start ====='
     print string
     print 'vasp.iter_relax: ===== string end ====='
@@ -635,6 +652,16 @@ def iter_epitaxial(vasp, structure, outdir=None, direction=[0,0,1], epiconv = 1e
                    .format(structure, repr(structure).replace('\n', '\n            ')),
                    file.read() )
   with open(filename, 'w') as file: file.write(string)
+  if bugLev >= 5:
+    print 'vasp/relax iter_epitaxial static: cwd: ', getcwd()
+    print 'vasp.iter_epitaxial: filename: \"%s\"' % (filename,)
+    print 'vasp/relax iter_epitaxial static: write initial structure:\n%s' \
+      % (structure,)
+    print 'vasp.iter_epitaxial: initial structure written'
+    print 'vasp/relax iter_epitaxial static: cwd: ', getcwd()
+    print 'vasp/relax iter_epitaxial static: write initial structure:\n%s' \
+      % (structure,)
+
   # yields final extraction object.
   yield iter_epitaxial.Extract(outdir)
 

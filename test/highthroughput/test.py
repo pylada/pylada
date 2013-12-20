@@ -22,7 +22,7 @@
 
 """ High-Thoughput of A2BO4 structures. """
 __docformat__ = "restructuredtext en"
-__all__ = ['nonmagnetic_wave', 'magnetic_wave']
+__all__ = ['nonmagnetic_wave', 'magnetic_wave', 'calcGW']
 
 def nonmagnetic_wave(path, inputpath="input.py", **kwargs):
   """ Jobs to explore possible ground-states. 
@@ -249,6 +249,7 @@ def magnetic_wave( path=None, inputpath='input.py', **kwargs):
     if relpath(name, basename[1:]) != nonmagname: continue
     # check for success and avoid failures.
     extractPath = join(basedir, name)
+    # xxx use contcar
     extract = nonmagjob.functional.Extract( extractPath)
     if bugLev >= 1:
       print "test/hi/test.mag: extractPath: %s" % (extractPath,)
@@ -543,4 +544,131 @@ def runAntiFerroTest(
     job.lattice  = lattice
 
   return jobname
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def calcGW( path=None, inputpath='inputGW.py', **kwargs):
+  """ Runs GW calcs on all subfolders.
+
+      :Parameters:
+        path : str or None
+          Path where the modified job-folder will be saved. Calculations will be
+          performed in the parent directory of this file. If None, will use the
+          current job-folder path.
+        inputpath : str or None
+          Path to an input file.
+        kwargs
+          Any keyword/value pair to take precedence over anything in the input file.
+  """
+  from tempfile import NamedTemporaryFile
+  from os.path import dirname, normpath, relpath, join
+  from IPython.core.interactiveshell import InteractiveShell
+  from pylada.vasp import read_input
+  from pylada.jobfolder import JobFolder
+  from pylada import interactive
+  import pickle, random
+
+  from pylada.misc import setBugLev
+  setBugLev(0)   # set global debug level
+  from pylada.misc import bugLev
+
+  with open(path) as fin:
+    jobfolder = pickle.load( fin)
+  basedir = dirname( path)
+  jobfolder_path = join( basedir, jobfolder.name)
+
+  # Loads job-folder and path as requested. 
+  if jobfolder is None: 
+    print "No current job-folder."
+    return
+  if jobfolder_path is None: 
+    print "No path for current job-folder."
+    return
+
+  input = read_input(inputpath)
+
+  # will loop over all folders, looking for all successfull calculations. 
+  nb_new_folders = 0
+  for name, pjob in jobfolder.iteritems():
+    if bugLev >= 1:
+      print "test/hi/test.gw: name: %s  pjob: %s" % (name, pjob,)
+    # avoid tagged folders.
+    if pjob.is_tagged: continue
+
+    basename = normpath("/" + name + "/../")
+    if bugLev >= 1:
+      print "test/hi/test.gw: basename: %s" % (basename,)
+
+    # check for success and avoid failures.
+    extractPath = join(basedir, name)
+    extract = pjob.functional.Extract( extractPath)
+    if bugLev >= 1:
+      print "test/hi/test.gw: extractPath: %s" % (extractPath,)
+      print "test/hi/test.gw: extract.success: %s" % (extract.success,)
+      print "test/hi/test.gw: extract: %s" % (extract,)
+      print "test/hi/test.gw: dir(extract): %s" % (dir(extract),)
+    if not extract.success: continue
+
+    if bugLev >= 1:
+      print 'test/hi/test.gw ========== A'
+      print "test/hi/test.gw: nonmag structure: %s" % (pjob.structure,)
+      print 'test/hi/test.gw ========== B'
+      print "test/hi/test.gw: extract.structure: %s" % (extract.structure,)
+      print 'test/hi/test.gw ========== C'
+      print "test/hi/test.gw: extract.species: %s" % (extract.species,)
+      print "test/hi/test.gw: extract functional species: %s" \
+        % (extract.functional.species,)
+      print 'test/hi/test.gw ========== D'
+      print "test/hi/test.gw: dir(pjob): %s" % (dir(pjob),)
+      print 'test/hi/test.gw ========== E'
+
+    # loads lattice and material from previous job.
+    material = pjob.material
+    lattice = pjob.lattice
+    if bugLev >= 1:
+      print "test/hi/test.gw: material: %s" % (material,)
+      print "test/hi/test.gw: lattice: %s" % (lattice,)
+
+    jobname = pjob.name + '/gw'
+    structure = extract.structure.copy()
+    structure.name = "{0} in {1}, GW.".format(material, lattice.name)
+    if bugLev >= 1:
+      print "test/hi/test.gw: jobname: %s" % (jobname,)
+      print "test/hi/test.gw: structure.name: %s" % (structure.name,)
+
+    job = jobfolder / jobname
+    if bugLev >= 1:
+      print "test/hi/test.gw: job: %s" % (job,)
+    job.functional = input.vasp
+    job.params["structure"] = structure.copy()
+    job.params["magmom"] = True
+    job.params["ispin"] =  2
+    # saves some stuff for future reference.
+    job.material = material
+    job.lattice  = lattice
+    print "test/hi/test.gw: created ferro jobname: %s" % (jobname,)
+    nb_new_folders += 1
+
+  # now saves new job folder
+  print "Created {0} new folders.".format(nb_new_folders)
+  if nb_new_folders == 0: return
+  interactive.jobfolder = jobfolder.root
+  InteractiveShell.instance().magic("savefolders " + path)
+
+
+
+
+
 

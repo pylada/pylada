@@ -39,6 +39,10 @@ class AbstractExtractBase(object):
           directory : str or None
             Root directory for extraction. If None, will use current working directory.
     """
+    from pylada.misc import bugLev
+
+    if bugLev >= 5:
+      print 'tools/extract: AbstractExtractBase: object: ', object
     object.__init__(self)
 
     from os import getcwd

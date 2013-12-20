@@ -27,6 +27,8 @@ __all__ = [ "SpecialVaspParam", "ExtraElectron", "Algo", "Precision", "Ediff",\
             "Magmom", 'Npar', 'Boolean', 'Integer', 'Choices', 'PrecFock', 'NonScf', \
             "System", 'PartialRestart', 'Relaxation', 'Smearing', 'Lsorbit' ]
 from quantities import eV
+from pylada.misc import bugLev
+
 class SpecialVaspParam(object): 
   """ Base type for special vasp parameters. 
   
@@ -422,8 +424,12 @@ class PartialRestart(SpecialVaspParam):
 
     if self.value is None or self.value.success == False:
       if kwargs['vasp'].nonscf: kwargs['vasp'].icharg = 12
+      if bugLev >= 5: print 'vasp/incar/_params: PartialRestart: no luck'
       return None
     else:
+      if bugLev >= 5:
+        print 'vasp/incar/_params: PartialRestart: self.val.dir: %s' \
+          % (self.value.directory,)
       ewave = exists( join(self.value.directory, files.WAVECAR) )
       if ewave: ewave = getsize(join(self.value.directory, files.WAVECAR)) > 0
       if ewave:
@@ -464,12 +470,19 @@ class Restart(PartialRestart):
     from os.path import join
     from ...misc import copyfile
     from .. import files
+    import os
 
     result = super(Restart, self).incar_string(**kwargs)
     if self.value is not None and self.value.success:
       copyfile(join(self.value.directory, files.CONTCAR), files.POSCAR,\
                nothrow='same exists', symlink=getattr(kwargs["vasp"], 'symlink', False),\
                nocopyempty=True) 
+    if bugLev >= 5:
+      print 'vasp/incar/_params: Restart CONTCAR: self.val.dir: %s' \
+        % (self.value.directory,)
+      print 'vasp/incar/_params: Restart: os.getcwd():  %s' \
+        % (os.getcwd(),)
+      print 'vasp/incar/_params: Restart: result: %s' % (result,)
     return result
 
 class NonScf(SpecialVaspParam):

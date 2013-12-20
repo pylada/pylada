@@ -24,6 +24,8 @@ from quantities import eV
 from ..tools.input import BoolKeyword as BaseBoolKeyword, ValueKeyword,        \
                           TypedKeyword, AliasKeyword, ChoiceKeyword,           \
                           BaseKeyword, QuantityKeyword
+from pylada.misc import bugLev
+
 class BoolKeyword(BaseBoolKeyword):
   """ Boolean keyword.
 
@@ -496,6 +498,7 @@ class Encut(ValueKeyword):
       return {self.keyword: str(encut * value)}
     return {self.keyword: str(value)}
 
+##? gwmod?
 class EncutGW(Encut):
   """ Defines cutoff factor for GW calculation. 
 
@@ -737,8 +740,12 @@ class IStruc(AliasKeyword):
   """ Aliases for the same option. """
   keyword = None
   """ Does not correspond to a VASP keyword """
+
   def __init__(self, value='auto'):
+    if bugLev >= 5:
+      print 'keywords: IStruct.init for CONTCAR: value: %s' % (value,)
     super(IStruc, self).__init__(value=value)
+
   def output_map(self, **kwargs):
     from os.path import join
     from ..misc import latest_file
@@ -746,6 +753,9 @@ class IStruc(AliasKeyword):
     from ..crystal import write, read, specieset
     from . import files
 
+    if bugLev >= 5:
+      print 'keywords: IStruct.output for CONTCAR: _value: %s' \
+        % (self._value,)
     istruc = self._value
     if istruc is None: istruc = 0
     if kwargs.get('overwrite', False): istruc = 0
@@ -755,10 +765,17 @@ class IStruc(AliasKeyword):
     has_restart = getattr(vasp, 'restart', None) is not None and istruc != 2
     if has_restart: has_restart = vasp.restart.success
     if has_restart: structure = vasp.restart.structure
+    if bugLev >= 5:
+      print 'keywords: IStruct.output: istruc: %s' % (istruc,)
+      print 'keywords: IStruct.output: has_restart: %s' % (has_restart,)
+      print 'keywords: IStruct.output: outdir: %s' % (outdir,)
+      print 'keywords: IStruct.output: structure:\n%s' % (structure,)
 
     # determines which CONTCAR is the latest, if any exist.
     if istruc in [-1, 1]: 
       last_contcar = latest_file(join(outdir, files.CONTCAR))
+      if bugLev >= 5:
+        print 'keywords: IStruct.output: last_contcar: %s' % (last_contcar,)
       # if a contcar exists and we should re-read, then modifies structure
       # accordingly. It is expected that the structures are equivalent, in the
       # sense that they have the same atoms in the same order (more
@@ -778,6 +795,9 @@ class IStruc(AliasKeyword):
             a.pos = b.pos
         structure.cell = other.cell
         structure.scale = other.scale
+        if bugLev >= 5:
+          print 'keywords: IStruct.output: outdir: %s' % (outdir,)
+          print 'keywords: IStruct.output: new structure:\n%s' % (structure,)
 
     # Depending on different options and what's available, writes structure or
     # copies contcar.
@@ -919,14 +939,18 @@ class Precision(AliasKeyword):
   keyword = 'PREC'
   """ Vasp keyword. """
 
+
 class Nsw(TypedKeyword):
   type = int
   """ Type of the keyword. """
   keyword = 'nsw'
   """ VASP keyword. """
+
+
 class Isif(ChoiceKeyword):
   keyword = 'isif'
   values = range(8)
+
 
 class IBrion(BaseKeyword):
   keyword = 'ibrion'
@@ -964,9 +988,13 @@ class Relaxation(BaseKeyword):
   """
   keyword = None
   """ Just an alias for ISIF. """
+
+
   def __init__(self, value=None):
     super(Relaxation, self).__init__()
     self.value = value
+
+
   def __get__(self, instance, owner=None): 
     nsw = instance.nsw if instance.nsw is not None else 0
     ibrion = instance.ibrion if instance.ibrion is not None                    \
@@ -981,6 +1009,8 @@ class Relaxation(BaseKeyword):
              5: 'cellshape',
              6: 'cellshape volume',
              7: 'volume' }[instance.isif]
+
+
   def __set__(self, instance, value):
     from ..error import ValueError
     if value is None: value = 'static'
@@ -994,25 +1024,26 @@ class Relaxation(BaseKeyword):
                 7: 'volume' }[dummy]
     value = set(value.lower().replace(',', ' ').rstrip().lstrip().split())
     result = []
-    if 'all' in value: result = 'ionic cellshape volume'.split()
+    if 'all' in value:
+      result = 'ionic cellshape volume'.split()
+      #gwmod: result = 'ionic cellshape volume gwcalc'.split()
     else:
       if 'ion' in value or 'ions' in value or 'ionic' in value:
         result.append('ionic')
       if 'cell' in value or 'cellshape' in value or 'cell-shape' in value: 
         result.append('cellshape')
       if 'volume' in value: result.append('volume')
-      #if 'gwmod in value: result.append('gwmod')
+      #gwmod: if 'gwcalc in value: result.append('gwcalc')
 
     result = ', '.join(result)
 
     # static case
     if len(result) == 0:
-    # if len(result) == 0 or result == ['gwmod']:
+    # if len(result) == 0 or result == ['gwcalc']:
       instance.nsw = 0
       if instance.ibrion is not None: instance.ibrion = -1
       if instance.isif is not None:
         if instance.isif > 2: instance.isif = 2
-      #gwmod = 'gwmod' in result
       return
     
     # non-static
@@ -1021,6 +1052,7 @@ class Relaxation(BaseKeyword):
     ionic = 'ionic' in result
     cellshape = 'cellshape' in result
     volume = 'volume' in result
+    #gwmod: gwcalc = 'gwcalc' in result
 
     if ionic and (not cellshape) and (not volume):   instance.isif = 2
     elif ionic and cellshape and (not volume):       instance.isif = 4
@@ -1033,9 +1065,10 @@ class Relaxation(BaseKeyword):
                         "and volume at constant cell-shape.\n" )
     else: instance.isif = 2
 
-    # gwmod: if 'gw' in value: ...
+    # gwmod: if 'gwcalc' in value: ...
 
   def output_map(self, **kwargs): return None
+
 
 class ISmear(AliasKeyword):
   keyword = 'ismear'
@@ -1043,9 +1076,12 @@ class ISmear(AliasKeyword):
               -1: ['fermi'], -2: ['fixresults'], 0: ['gaussian'],
                1: ['mp', 'mp1', 'mp 1'], 2: ['mp 2', 'mp2'],
                3: ['mp3', 'mp 3'] }
+
+
 class Sigma(QuantityKeyword): 
   keyword  = 'sigma'
   units = eV
+
 
 class LSorbit(BoolKeyword):
   """ Run calculation with spin-orbit coupling. 
@@ -1082,15 +1118,18 @@ class LSorbit(BoolKeyword):
     vasp.lvhar = vasp.restart.lvhar
     return super(LSorbit, self).output_map(**kwargs)
 
+
 class NonScf(BoolKeyword):
   keyword = None
   """ Does not correspond to a VASP keyword. """
   def __init__(self, value=False):
     super(NonScf, self).__init__(value=False)
 
+
 class LMaxMix(TypedKeyword):
   keyword = 'lmaxmix'
   type = int
+
 
 class LVHar(BoolKeyword):
   keyword = 'LVHAR'

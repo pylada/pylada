@@ -118,9 +118,9 @@ class Vasp(AttrBlock):
     from ..tools.input import TypedKeyword, ChoiceKeyword
     super(Vasp, self).__init__()
     if bugLev >= 5:
-      print "  vasp/functional.Vasp.__init__: species: ", species
-      print "  vasp/functional.Vasp.__init__: kpoints: ", kpoints
-      print "  vasp/functional.Vasp.__init__: kwargs: ", kwargs
+      print "vasp/functional.Vasp.__init__: species: ", species
+      print "vasp/functional.Vasp.__init__: kpoints: ", kpoints
+      print "vasp/functional.Vasp.__init__: kwargs: ", kwargs
 
     self.species = species if species is not None else {}
     """ Species in the system.
@@ -829,6 +829,7 @@ class Vasp(AttrBlock):
     for key, value in kwargs.iteritems():
       if hasattr(self, key): setattr(self, key, value)
 
+  # NEVER CALLED!
   def __call__( self, structure, outdir=None, comm=None, overwrite=False, 
                 **kwargs):
     """ Calls vasp program and waits until completion. 
@@ -841,11 +842,18 @@ class Vasp(AttrBlock):
 
         :returns: An extraction object of type :py:attr:`Extract`.
     """
+    import os, sys, traceback
+
+    # NEVER CALLED!
+    print 'functional __call__ A: ===== start stack trace'
+    traceback.print_stack( file=sys.stdout)
+    print 'functional __call__ A: ===== end stack trace'
 
     if bugLev >= 5:
-      print "  vasp/functional: call: structure: ", structure
-      print "  vasp/functional: call: outdir: ", outdir
-      print "  vasp/functional: call: comm: ", comm
+      print "vasp/functional __call__: outdir: ", outdir
+      print "vasp/functional __call__: structure:\n", structure
+      print "vasp/functional __call__: comm: ", comm
+
     for program in self.iter(structure, outdir=outdir, comm=comm, overwrite=overwrite, **kwargs):
       # iterator may yield the result from a prior successful run. 
       if getattr(program, 'success', False): continue
@@ -854,12 +862,15 @@ class Vasp(AttrBlock):
       # otherwise, it should yield a Program process to execute.
       # This next line starts the asynchronous call to the external VASP
       # program.
-      print "  vasp/functional: xxxxxxxxxxx before start"
+
+      if bugLev >= 5: print "vasp/functional __call__: before start"
       program.start(comm)
+
+      if bugLev >= 5: print "vasp/functional __call__: before wait"
       # This next lines waits until the VASP program is finished.
-      print "  vasp/functional: xxxxxxxxxxx before wait"
       program.wait()
-      print "  vasp/functional: xxxxxxxxxxx after wait"
+
+      if bugLev >= 5: print "vasp/functional __call__: after wait"
     # Last yield should be an extraction object.
     if not program.success:
       raise RuntimeError("Vasp failed to execute correctly.")
@@ -941,10 +952,56 @@ class Vasp(AttrBlock):
     ###from .. import vasp_program
     from ..process.program import ProgramProcess
     from .extract import Extract as ExtractVasp
+    import os, sys, traceback
+
+    if bugLev >= 5:
+      print 'vasp/functional iter: ===== start stack trace'
+      traceback.print_stack( file=sys.stdout)
+      print 'vasp/functional iter: ===== end stack trace'
+
+      # Stack trace here is:
+      #   ipython/launch/scattered_script.py", line 114, in <module>
+      #     if __name__ == "__main__": main()
+      #   ipython/launch/scattered_script.py", line 109, in main
+      #     jobfolder[name].compute(comm=comm, outdir=name)
+      #   jobfolder/jobfolder.py", line 295, in compute
+      #     res = self.functional.__call__(**params)
+      #
+      #   Probably the following is the dynamically compiled code
+      #   created by tools/makeclass: create_call_from_iter.
+      #   Code is similar to:
+      #     def __call__(self, structure, outdir=None, comm=None, **kwargs):
+      #       result  = None
+      #       for program in self.iter(structure, outdir=outdir,
+      #           comm=comm, **kwargs):
+      #         program.start(comm)
+      #         program.wait()
+      #       return result
+      #   File "<string>", line 16, in __call__
+      #
+      #   Probably the following is the dynamically compiled code
+      #   created by tools/makeclass: create_iter
+      #   Code is similar to:
+      #     def iter(self, structure, outdir=None, **kwargs):
+      #       for o in iter_relax(
+      #           SuperCall(self.__class__, self),
+      #           structure, outdir=outdir, first_trial=self.first_trial,
+      #           maxcalls=self.maxcalls, keepsteps=self.keepsteps,
+      #           nofail=self.nofail, convergence=self.convergence,
+      #           minrelsteps=self.minrelsteps, **kwargs):
+      #         yield o
+      #   File "<string>", line 12, in iter
+      #
+      #   vasp/relax.py", line 272, in iter_relax
+      #    for u in vasp.iter( relaxed_structure, outdir = fulldir,
+      #      restart = output, relaxation = relaxation, **params):
+      #   vasp/functional.py", line 960, in iter
+      #     traceback.print_stack( file=sys.stdout)
+
+      print 'vasp/functional iter: outdir: %s' % (outdir,)
+      print 'vasp/functional iter: structure:\n%s' % (structure,)
 
     # check for pre-existing and successful run.
-    if bugLev >= 5:
-      print "  vasp/functional: iter: structure: ", structure
     if not overwrite:
       # Check with this instance's Extract, cos it is this calculation we shall
       # do here. Derived instance's Extract might be checking for other stuff.
@@ -959,8 +1016,8 @@ class Vasp(AttrBlock):
     # figures out what program to call.
     vaspProgram = getattr( self, 'program', None)
     if bugLev >= 5:
-      print '  vasp/functional.iter: vaspProgram: %s' % (vaspProgram,)
-      print '  vasp/functional.iter: testValidProgram: %s' % (testValidProgram,)
+      print 'vasp/functional iter: vaspProgram: %s' % (vaspProgram,)
+      print 'vasp/functional iter: testValidProgram: %s' % (testValidProgram,)
     if vaspProgram == None:
       raise RuntimeError('program was not set in the vasp functional')
 
@@ -995,26 +1052,26 @@ class Vasp(AttrBlock):
     import os
 
     if bugLev >= 5:
-      print '  vasp/functional.Vasp.bringup: structure: ', structure
-      print '  vasp/functional.Vasp.bringup: outdir: ', outdir
-      print '  vasp/functional.Vasp.bringup: kwargs: ', kwargs
+      print 'vasp/functional bringup: outdir: ', outdir
+      print 'vasp/functional bringup: structure:\n%s' % (structure,)
+      print 'vasp/functional bringup: kwargs: ', kwargs
 
     with Changedir(outdir) as tmpdir:
       # creates INCAR file (and POSCAR via istruc).
       fpath = join(outdir, files.INCAR)
       if bugLev >= 5:
-        print "  vasp/functional.Vasp.bringup: incar fpath: ", fpath
+        print "vasp/functional bringup: incar fpath: ", fpath
       self.write_incar( structure, path=fpath, outdir=outdir, **kwargs )
   
       # creates kpoints file
       if bugLev >= 5:
-        print "  vasp/functional.Vasp.bringup: files.KPOINTS: ", files.KPOINTS
+        print "vasp/functional bringup: files.KPOINTS: ", files.KPOINTS
       with open(files.KPOINTS, "w") as kp_file: 
         self.write_kpoints(kp_file, structure)
   
       # creates POTCAR file
       if bugLev >= 5:
-        print "  vasp/functional.Vasp.bringup: files.POTCAR: ", files.POTCAR
+        print "vasp/functional bringup: files.POTCAR: ", files.POTCAR
       with open(files.POTCAR, 'w') as potcar:
         for s in specieset(structure):
           outLines = self.species[s].read_potcar()
@@ -1022,7 +1079,7 @@ class Vasp(AttrBlock):
       # Add is running file marker.
       with open('.pylada_is_running', 'w') as file: pass
       if bugLev >= 5:
-        print 'vasp/functional: bringup: is_run dir: %s' % (os.getcwd(),)
+        print 'vasp/functional bringup: is_run dir: %s' % (os.getcwd(),)
     
   def bringdown(self, directory, structure):
     """ Copies contcar to outcar. """
@@ -1030,7 +1087,33 @@ class Vasp(AttrBlock):
     from os import remove
     from . import files
     from ..misc import Changedir
-    import os
+    import os, sys, traceback
+
+    if bugLev >= 5:
+      print 'vasp/functional bringdown: ===== start stack trace'
+      traceback.print_stack( file=sys.stdout)
+      print 'vasp/functional bringdown: ===== end stack trace'
+
+      # Stack trace here is:
+      #   ipython/launch/scattered_script.py", line 114, in <module>
+      #     if __name__ == "__main__": main()
+      #   ipython/launch/scattered_script.py", line 109, in main
+      #     jobfolder[name].compute(comm=comm, outdir=name)
+      #   jobfolder/jobfolder.py", line 295, in compute
+      #     res = self.functional.__call__(**params)
+      #   File "<string>", line 25, in __call__
+      #   process/program.py", line 352, in wait
+      #     self.poll()
+      #   process/program.py", line 201, in poll
+      #     try: self.onfinish(process=self, error=(poll!=0))
+      #   vasp/functional.py", line 994, in onfinish
+      #     def onfinish(process, error):  self.bringdown(outdir, structure)
+      #   vasp/functional.py", line 1059, in bringdown
+      #     traceback.print_stack( file=sys.stdout)
+
+      print 'vasp/functional bringdown: directory: ', directory
+      print 'vasp/functional bringdown: write initial structure:\n%s' \
+        % (structure,)
 
     # Appends INCAR and CONTCAR to OUTCAR:
     with Changedir(directory) as pwd:
@@ -1048,12 +1131,14 @@ class Vasp(AttrBlock):
                      """structure = {1}\n"""\
                      .format(structure, repr(structure).replace('\n', '\n            ')))
         outcar.write('\n################ END INITIAL STRUCTURE ################\n')
+        if bugLev >= 5:
+          print 'vasp/functional bringdown: initial structure written'
         outcar.write('\n################ FUNCTIONAL ################\n')
         outcar.write(repr(self))
         outcar.write('\n################ END FUNCTIONAL ################\n')
       if exists('.pylada_is_running'): remove('.pylada_is_running')
       if bugLev >= 5:
-        print 'vasp/functional: bringdown: is_run dir: %s' % (os.getcwd(),)
+        print 'vasp/functional bringdown: is_run dir: %s' % (os.getcwd(),)
 
   def write_incar(self, structure, path=None, **kwargs):
     """ Writes incar file. """
@@ -1062,9 +1147,9 @@ class Vasp(AttrBlock):
     from .files import INCAR
 
     if bugLev >= 5:
-      print "    vasp/functional.Vasp.write_incar: structure: ", structure
-      print "    vasp/functional.Vasp.write_incar: path: ", path
-      print "    vasp/functional.Vasp.write_incar: kwargs: ", kwargs
+      print "vasp/functional write_incar: path: ", path
+      print "vasp/functional write_incar: structure:\n%s" % (structure,)
+      print "vasp/functional write_incar: kwargs: ", kwargs
 
     # check what type path is.
     # if not a file, opens one an does recurrent call.
@@ -1089,9 +1174,9 @@ class Vasp(AttrBlock):
     """ Writes kpoints to a stream. """
 
     if bugLev >= 5:
-      print "    vasp/functional.Vasp.write_kpoints: file: ", file
-      print "    vasp/functional.Vasp.write_kpoints: structure: ", structure
-      print "    vasp/functional.Vasp.write_kpoints: kpoints: ", kpoints
+      print "vasp/functional write_kpoints: file: ", file
+      print "vasp/functional write_kpoints: structure:\n%s" % (structure,)
+      print "vasp/functional write_kpoints: kpoints: ", kpoints
 
     if kpoints == None: kpoints = self.kpoints
     if isinstance(self.kpoints, str): file.write(self.kpoints)
