@@ -1138,14 +1138,13 @@ class Vasp(AttrBlock):
     #    outcar.write('\n################ FUNCTIONAL ################\n')
     #    outcar.write(repr(self))
     #    outcar.write('\n################ END FUNCTIONAL ################\n')
-    #  if exists('.pylada_is_running'): remove('.pylada_is_running')
-    #  if bugLev >= 5:
-    #    print 'vasp/functional bringdown: is_run dir: %s' % (os.getcwd(),)
 
-    # nomodoutcar
-    with open('pylada.FUNCTIONAL', 'w') as fout:
-      fout.write( repr( self))
+    with Changedir(directory) as pwd:
+      # nomodoutcar
+      with open('pylada.FUNCTIONAL', 'w') as fout:
+        fout.write( repr( self))
 
+      if exists('.pylada_is_running'): remove('.pylada_is_running')
 
 
   def write_incar(self, structure, path=None, **kwargs):

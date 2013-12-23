@@ -306,9 +306,10 @@ echo config/mpi.py pbs_string: which python A: $(which python)
 module load epel/6.3
 module load python/2.7.4/impi-intel
 
-. /nopt/nrel/ecom/cid/virtipy/bin/activate
+. /nopt/nrel/ecom/cid/pylada/5.0.006/virtipy/bin/activate
 
-export PYTHONPATH=$PYTHONPATH:/nopt/nrel/ecom/cid/pylada/5.0.05/pinstall/lib64/python2.7/site-packages
+
+export PYTHONPATH=$PYTHONPATH:/nopt/nrel/ecom/cid/pylada/5.0.006/pinstall/lib64/python2.7/site-packages
 
 
 
