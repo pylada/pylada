@@ -85,7 +85,7 @@ def savefolders(self, event):
     if not isfile(jobfolder_path): 
       print "{0} is not a file.".format(jobfolder_path)
       return
-    a = ''
+    a = 'y'       # testValidProgram: force yes to allow automated testing
     while a not in ['n', 'y']:
       a = raw_input( "File {0} already exists.\nOverwrite? [y/n] "             \
                      .format(jobfolder_path) )

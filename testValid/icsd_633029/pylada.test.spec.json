@@ -1,6 +1,6 @@
 {
-  "absEpsilon":   "1.e-8",
-  "relEpsilon":   "1.e-8",
+  "absEpsilon":   "1.e-6",
+  "relEpsilon":   "1.e-6",
   "refRoot":      "~/peregrine/testlada.FeO.icsd_633029",
   "workRoot":     "~/pylada/testValid/icsd_633029/temp.test",
   "inFiles":      "INCAR,KPOINTS,POSCAR,POTCAR",
