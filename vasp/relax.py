@@ -181,7 +181,10 @@ def iter_relax( vasp, structure, outdir=None, first_trial=None,
   from ..error import ExternalRunFailed
 
   if bugLev >= 5:
-    print "vasp/relax: iter_relax: vasp: %s" % (vasp,)
+    print "vasp/relax: iter_relax: entry.  vasp: %s" % (vasp,)
+    print 'vasp/relax: iter_relax: entry.  maxcalls: %d' % (maxcalls,)
+    for item in vasp.__dict__.items():
+      print '  vasp/relax: iter_relax: entry.  vasp item: %s' % (item,)
 
     # Shows type: pylada.tools.SuperCall
     print "vasp/relax: iter_relax: type(vasp): %s" % (type(vasp),)
@@ -227,7 +230,9 @@ def iter_relax( vasp, structure, outdir=None, first_trial=None,
     params.update(first_trial)
   else: params = kwargs
   if bugLev >= 5:
+    print "vasp/relax: iter_relax: kwargs: %s\n" % (kwargs,)
     print "vasp/relax: iter_relax: params: %s\n" % (params,)
+    print "vasp/relax: iter_relax: vasp.relaxation: %s\n" % (vasp.relaxation,)
   # params: {'comm': {'placement': '', 'ppn': 4, 'n': 8}}
   
   # defaults to vasp.relaxation
@@ -247,7 +252,6 @@ def iter_relax( vasp, structure, outdir=None, first_trial=None,
     print "vasp/relax: iter_relax: relaxation b: %s  type: %s\n" \
       % (relaxation, type(relaxation),)
   # cellshape ionic volume
-
 
   # performs relaxation calculations.
   if bugLev >= 5:
@@ -293,8 +297,6 @@ def iter_relax( vasp, structure, outdir=None, first_trial=None,
     if bugLev >= 5:
       print "vasp/relax: iter_relax: relax cellshape isConv: %s" % (isConv,)
     if isConv: break;
-
-
 
   # Does not perform ionic calculation if convergence not reached.
   if nofail == False and is_converged(output) == False: 
@@ -351,21 +353,22 @@ def iter_relax( vasp, structure, outdir=None, first_trial=None,
 
 
 
-
-
-
-
-
-
-
-
-
+  # xxxxxxxxxxxxxxxxx start here
+  # xxx set INCAR parameters by:
+  #  vasp._input['xxxxxfoobar'] = 'xxxxxFOOBAREDxxxxx'
+  # Similarly, in the files test/highthroughput/input*.py,
+  # one can use the same assignment.
 
   # gwmod: same while loop as above, but with relaxation="gwcalc"
   # performs gwcalc calculation, at most once
   if bugLev >= 5:
-    print "vasp/relax: iter_relax: beg gwcalc.  nb_steps: %d  maxcalls: %d" \
-      % (nb_steps, maxcalls,)
+    print 'vasp/relax: iter_relax: before gwcalc.  nb_steps: %d' % (nb_steps,)
+    print 'vasp/relax: iter_relax: before gwcalc.  maxcalls: %d' % (maxcalls,)
+    print 'vasp/relax: iter_relax: before gwcalc.  relaxation: %s' \
+      % (relaxation,)
+    print 'vasp/relax: iter_relax: before gwcalc.  vasp.alg: %s' % (vasp.alg,)
+    #xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
   if (maxcalls <= 0 or nb_steps < maxcalls + 2) \
     and relaxation.find("gwcalc") != -1:
 
@@ -414,16 +417,13 @@ def iter_relax( vasp, structure, outdir=None, first_trial=None,
 
 
 
-
-
-
-
-
   # Does not perform static calculation if convergence not reached.
   if nofail == False and is_converged(output) == False: 
     raise ExternalRunFailed("Could not converge ions in {0} iterations.".format(maxcalls))
 
   # performs final calculation outside relaxation directory. 
+  # gwmod: if relaxation.find("gwcalc") == -1 ...  # skip if gwmod
+
   for u in vasp.iter\
     (\
       relaxed_structure, \
@@ -435,12 +435,16 @@ def iter_relax( vasp, structure, outdir=None, first_trial=None,
     if bugLev >= 5:
       print "vasp/relax: iter_relax: static yield u: %s" % (u,)
     yield u
+
   output = vasp.Extract(outdir)
   if bugLev >= 5:
     print "vasp/relax: iter_relax: static output: %s" % (output,)
-  if not output.success: ExternalRunFailed("VASP calculations did not complete.")
+  if not output.success: ExternalRunFailed(
+    "VASP calculations did not complete.")
+
 
   # nomodoutcar
+  # Caution: this edits OUTCAR, overwrites OUTCAR, rewrites OUTCAR.
   # replace initial structure with that with which this function was called.
   #with output.__outcar__() as file:
   #  filename = file.name
@@ -647,6 +651,7 @@ def iter_epitaxial(vasp, structure, outdir=None, direction=[0,0,1], epiconv = 1e
   final = vasp.Extract(outdir)
 
   # replace initial structure with that with which this function was called.
+  # Caution: this edits OUTCAR, overwrites OUTCAR, rewrites OUTCAR.
   with final.__outcar__() as file:
     filename = file.name
     string = sub(  '#+ INITIAL STRUCTURE #+\n((.|\n)*)\n#+ END INITIAL STRUCTURE #+',

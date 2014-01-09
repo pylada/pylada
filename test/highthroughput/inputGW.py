@@ -41,28 +41,53 @@ vasp.has_nlep = True
 setTestValidProgram( None)
 
 
+vasp.isym       = 0
 vasp.prec       = "accurate"
-vasp.ediff      = 0.00000666666 # 6.0e-5        # total, not per atom
-vasp.encut      = 333.33  # 340.0
+vasp.addgrid    = True
+vasp.lmaxmix    = 4
+vasp.lorbit     = 10
+
+vasp.ismear     = 0
+vasp.sigma      = 0.01
+vasp.encut      = 340.0
+vasp.nelm       = 1
+
+vasp.algo       = "gw"
+vasp.lwave      = True
+vasp.lmaxfockae = 4
+vasp.nomega     = 64
+##vasp.precfock   = False
+vasp.encutgw    = 150.0
+vasp.encutlf    = 150.0
+vasp.lrpa       = False
+
+vasp.isin       = 1
+vasp.nbands     = 512
+vasp.loptics    = True
+vasp.lpead      = True
+
+vasp.ldau       = True
+##vasp.ldauprint  = 1
+##vasp.ldautype   = 2
+##vasp.ldul1      = 2 -1 -1
+##vasp.lduu1      = -2.4 0.0 0.0
+##vasp.lduj1      =  0.0 0.0 0.0
+##vasp.lduo1      = 2 1 1
+
+
+
+vasp.ediff        = 1e-3
+
 vasp.npar       = 8
 vasp.ncore      = 1
 vasp.lplane     = True
 
-vasp.addgrid    = True
-vasp.ismear     = "gaussian"
-vasp.sigma      = 0.01
-vasp.isym       = 0
 vasp.set_symmetries = "off"
 vasp.kpoints        = "\n0\nAuto\n20"
-vasp.lorbit         = 10
 
-vasp.lmaxmix = 4
 vasp.lvhar = False
 
 vasp.lcharg = True
-vasp.lwave = True
-vasp.loptics = False
-vasp.lpead = False
 
 
 # Fast: for fast, low accuracy use:

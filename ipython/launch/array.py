@@ -29,6 +29,7 @@ def launch(self, event, jobfolders):
 
 def launch_single(self, event, jobfolder):
   """ Launches a single jobfolder as a pbs array job """
+  import subprocess
   from copy import deepcopy
   from os.path import dirname, join, basename, exists
   from os import remove
@@ -114,8 +115,9 @@ def launch_single(self, event, jobfolder):
 
   if event.nolaunch: return
   # otherwise, launch.
-  shell.system("{0} {1}".format( qsub_array_exe[0].format(nbjobs=nbjobs),
-                                 pbsscript) )
+  cmdLine = "{0} {1}".format(
+    qsub_array_exe[0].format(nbjobs=nbjobs), pbsscript)
+  subprocess.call( cmdLine, shell=True)
 
 def completer(self, info, data):
   """ Completer for scattered launcher. """

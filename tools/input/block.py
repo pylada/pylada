@@ -180,16 +180,42 @@ class AttrBlock(BaseKeyword):
     self.__dict__['_input'] = value[1]
     self.__dict__.update(value[0])
 
+
+
   def output_map(self, **kwargs):
     """ Map of keyword, value """
     from .tree import Tree
+
+    # At this point kwargs is a map with entries:
+    #   'vasp': vasp/functional.Vasp.__init__: species:  None
+    #       vasp/functional.Vasp.__init__: kpoints:  None
+    #       vasp/functional.Vasp.__init__: kwargs:  {}
+    #       keywords: IStruct.init for CONTCAR: value: auto
+    #       from pylada.vasp.relax import Relax
+    #       from quantities.quantity import Quantity
+    #       relax = Relax()
+    #       relax.addgrid        = True
+    #       relax.ediff          = 6e-05
+    #       relax.encut          = 0.9
+    #       ...
+    #   'comm': None,
+    #   'overwrite': False,
+    #   'structure': Structure( 2.64707e-16, 2.1615, 2.1615,
+    #       2.1615, 1.32354e-16, 2.1615,
+    #       2.1615, 2.1615, 0,
+    #       scale=1, name='icsd_633029.cif' )\
+    #      .add_atom(0, 0, 0, 'Fe')\
+    #      .add_atom(2.1615, 2.1615, 2.1615, 'O'),
+    #  'outdir': '/tmp/temp.test/icsd_633029/icsd_633029.cif/non-magnetic/relax_cellshape/0'
+
     root = Tree()
-    result = root if getattr(self, 'keyword', None) is None                    \
+    result = root if getattr(self, 'keyword', None) is None \
              else root.descend(self.keyword)
     for key, value in self._input.iteritems():
       self._output_map(result, key, value, **kwargs)
     if len(result) == 0: return None
     return root
+
 
   @staticmethod
   def _output_map(_tree, _key, _value, **kwargs):

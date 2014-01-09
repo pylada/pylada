@@ -247,9 +247,9 @@ def create_call_from_iter(iter, excludes):
     print 'tools/makeclass: create_call_from_iter: ===== result end ====='
   if bugLev >= 5:
     import os, sys, traceback
-    print 'tools/makeclass: create_call_from_iter: ===== start stack trace'
-    traceback.print_stack( file=sys.stdout)
-    print 'tools/makeclass: create_call_from_iter: ===== end stack trace'
+    #print 'tools/makeclass: create_call_from_iter: ===== start stack trace'
+    #traceback.print_stack( file=sys.stdout)
+    #print 'tools/makeclass: create_call_from_iter: ===== end stack trace'
 
   return result
 

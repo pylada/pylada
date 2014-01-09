@@ -5,6 +5,7 @@
   "workRoot":     "XworkRootX",
   "inFiles":      "INCAR,KPOINTS,POSCAR,POTCAR",
   "outFiles":     "",
+  "omitFiles":    "^pbs.*$,^std.*$",
   "logFile":      "XworkRootX/log"
 }
 

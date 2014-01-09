@@ -25,6 +25,7 @@ __docformat__ = 'restructuredtext en'
 
 def launch(self, event, jobfolders):
   """ Launches each jobfolder in single pbs job """
+  import subprocess
   from copy import deepcopy
   from os.path import dirname, join, basename, exists
   from os import remove
@@ -106,7 +107,8 @@ def launch(self, event, jobfolders):
   if event.nolaunch: return
   # otherwise, launch.
   for script in pbsscripts:
-    shell.system("{0} {1}".format(qsub_exe, script))
+    cmdLine = "{0} {1}".format(qsub_exe, script)
+    subprocess.call( cmdLine, shell=True)
 
 def completer(self, info, data):
   """ Completer for scattered launcher. """

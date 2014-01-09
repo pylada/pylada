@@ -103,7 +103,6 @@ def main():
       print '  ipy/lau/scattered_script: before compute for name: %s' \
         % ( name,)
 
-
     comm = pylada.default_comm
     if testValidProgram != None: comm = None
     jobfolder[name].compute(comm=comm, outdir=name)

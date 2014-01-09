@@ -845,9 +845,9 @@ class Vasp(AttrBlock):
     import os, sys, traceback
 
     # NEVER CALLED!
-    print 'functional __call__ A: ===== start stack trace'
-    traceback.print_stack( file=sys.stdout)
-    print 'functional __call__ A: ===== end stack trace'
+    #print 'functional __call__ A: ===== start stack trace'
+    #traceback.print_stack( file=sys.stdout)
+    #print 'functional __call__ A: ===== end stack trace'
 
     if bugLev >= 5:
       print "vasp/functional __call__: outdir: ", outdir
@@ -955,9 +955,9 @@ class Vasp(AttrBlock):
     import os, sys, traceback
 
     if bugLev >= 5:
-      print 'vasp/functional iter: ===== start stack trace'
-      traceback.print_stack( file=sys.stdout)
-      print 'vasp/functional iter: ===== end stack trace'
+      #print 'vasp/functional iter: ===== start stack trace'
+      #traceback.print_stack( file=sys.stdout)
+      #print 'vasp/functional iter: ===== end stack trace'
 
       # Stack trace here is:
       #   ipython/launch/scattered_script.py", line 114, in <module>
@@ -1090,9 +1090,9 @@ class Vasp(AttrBlock):
     import os, sys, traceback
 
     if bugLev >= 5:
-      print 'vasp/functional bringdown: ===== start stack trace'
-      traceback.print_stack( file=sys.stdout)
-      print 'vasp/functional bringdown: ===== end stack trace'
+      #print 'vasp/functional bringdown: ===== start stack trace'
+      #traceback.print_stack( file=sys.stdout)
+      #print 'vasp/functional bringdown: ===== end stack trace'
 
       # Stack trace here is:
       #   ipython/launch/scattered_script.py", line 114, in <module>
@@ -1170,12 +1170,22 @@ class Vasp(AttrBlock):
 
     self.output_map(structure=structure, vasp=self, **kwargs)
     # twice, in-case some parameters change others.
+
+    # At this point (vasp==self)._input is a map of the incar parameters.
+    # The values may be primitives or callables.
+    # Example: self._input['foobar'] = 'FOOBARED'
+
     map = self.output_map(structure=structure, vasp=self, **kwargs)
+    # The resulting map is a map of the incar parameters.
+    # The values may be primitives or callables.
+
     length = max(len(u) for u in map)
     for key, value in map.iteritems():
       outLine = '{0: >{length}} = {1}\n'.format(
         key.upper(), value, length=length)
       path.write( outLine)
+
+
 
   def write_kpoints(self, file, structure, kpoints=None):
     """ Writes kpoints to a stream. """

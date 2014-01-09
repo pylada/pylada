@@ -201,6 +201,7 @@ def showme_params(self):
 
 def showme_pbs(self, which):
   """ Shows pbs files through less. """
+  import subprocess
   from os.path import join, exists, getmtime, dirname
   from glob  import glob
   from .. import interactive
@@ -221,7 +222,8 @@ def showme_pbs(self, which):
     print 'Could not find appropriate file for {0}'.format(interactive.jobfolder.name)
     return
   files = sorted(files, key=lambda x: getmtime(x))
-  self.shell.system('less {0}'.format(files[-1]))
+  cmdLine = 'less {0}'.format(files[-1])
+  subprocess.call( cmdLine, shell=True)
 
 def completer(self, event):
   """ Completer for showme. """

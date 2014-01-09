@@ -56,6 +56,8 @@ def nonmagnetic_wave(path, inputpath="input.py", **kwargs):
 
   # reads input.
   input = read_input(inputpath)
+  print '  test/hi/test nonmag: inputpath: ', inputpath
+  print '  test/hi/test nonmag: input.vasp.relaxation: ', input.vasp.relaxation
   input.update(kwargs)
 
 
@@ -74,19 +76,19 @@ def nonmagnetic_wave(path, inputpath="input.py", **kwargs):
 #  mlen = len( materials)
 #  llen = len( lattices)
 #  matLatPairs = (mlen * llen) * [None]
-#  print "  test/hi/input: mlen: ", mlen
-#  print "  test/hi/input: llen: ", llen
-#  print "  test/hi/input: pairs len: ", len(matLatPairs)
+#  print "  test/hi/test nonmag: mlen: ", mlen
+#  print "  test/hi/test nonmag: llen: ", llen
+#  print "  test/hi/test nonmag: pairs len: ", len(matLatPairs)
 #
 #  kk = 0
 #  for mat in materials:
-#    print "  test/hi/input: mat: ", mat
+#    print "  test/hi/test nonmag: mat: ", mat
 #    for lat in lattices:
-#      print "    test/hi/input: lat: ", lat
+#      print "    test/hi/test nonmag: lat: ", lat
 #      matLatPairs[kk] = (mat, lat,)
 #      kk += 1
 #
-#  print "test/hi/inputFixed: mats len: %d  lats len: %d  matLatPairs len: %d" \
+#  print "test/hi/test nonmag: mats len: %d  lats len: %d  matLatPairs len: %d" \
 #    % (mlen, llen, len( matLatPairs),)
 
 
@@ -103,15 +105,15 @@ def nonmagnetic_wave(path, inputpath="input.py", **kwargs):
   # loop over material-lattice pairs.
   for (material,lattice) in input.matLatPairs:
     if bugLev >= 1:
-      print '  test/hi/test: start material: ', material
-      print '  test/hi/test: start lattice: ', lattice
+      print '  test/hi/test nonmag: start material: ', material
+      print '  test/hi/test nonmag: start lattice: ', lattice
       print ''
     if bugLev >= 5:
-      print '  test/hi/test: ========== species =========='
+      print '  test/hi/test nonmag: ========== species =========='
       skeys = input.vasp.species.keys()
       skeys.sort()
       for skey in skeys:
-        print '    test/hi/test: species[%s]: %s' \
+        print '    test/hi/test nonmag: species[%s]: %s' \
           % (skey, input.vasp.species[skey], )
       print ''
 
@@ -133,7 +135,7 @@ def nonmagnetic_wave(path, inputpath="input.py", **kwargs):
       # actually creates dictionary.
       species_dict = {"A": match.group(1), "B": match.group(2),
         "X": match.group(3)}
-      #print '  test/hi/test: species_dict: ', species_dict
+      #print '  test/hi/test nonmag: species_dict: ', species_dict
       
       # Check lattice name
       if len(getattr(lattice, 'name', '').strip()) == 0:
@@ -166,8 +168,8 @@ def nonmagnetic_wave(path, inputpath="input.py", **kwargs):
     # saves some stuff for future reference.
     job.material = material
     job.lattice  = lattice
-    #print '    test/hi/test: job: ', job
-    #print '    test/hi/test: === job.functional ===\n%s\n=== end functional === ' % (job.functional,)
+    #print '    test/hi/test nonmag: job: ', job
+    #print '    test/hi/test nonmag: === job.functional ===\n%s\n=== end functional === ' % (job.functional,)
 
 
   interactive.jobfolder = jobfolder
@@ -232,6 +234,8 @@ def magnetic_wave( path=None, inputpath='input.py', **kwargs):
     return
 
   input = read_input(inputpath)
+  print '  test/hi/test mag: inputpath: ', inputpath
+  print '  test/hi/test mag: input.vasp.relaxation: ', input.vasp.relaxation
 
   # will loop over all folders, looking for *successfull* *non-magnetic* calculations. 
   # Only magnetic folders which do NOT exist are added at that point.
@@ -239,34 +243,34 @@ def magnetic_wave( path=None, inputpath='input.py', **kwargs):
   nb_new_folders = 0
   for name, nonmagjob in jobfolder.iteritems():
     if bugLev >= 1:
-      print "test/hi/test.mag: name: %s  nonmagjob: %s" % (name, nonmagjob,)
+      print "test/hi/test mag: name: %s  nonmagjob: %s" % (name, nonmagjob,)
     # avoid tagged folders.
     if nonmagjob.is_tagged: continue
     # avoid other folders (eg magnetic folders).
     basename = normpath("/" + name + "/../")
     if bugLev >= 1:
-      print "test/hi/test.mag: basename: %s" % (basename,)
+      print "test/hi/test mag: basename: %s" % (basename,)
     if relpath(name, basename[1:]) != nonmagname: continue
     # check for success and avoid failures.
     extractPath = join(basedir, name)
     # xxx use contcar
     extract = nonmagjob.functional.Extract( extractPath)
     if bugLev >= 1:
-      print "test/hi/test.mag: extractPath: %s" % (extractPath,)
-      print "test/hi/test.mag: extract.success: %s" % (extract.success,)
-      print "test/hi/test.mag: extract: %s" % (extract,)
-      print "test/hi/test.mag: dir(extract): %s" % (dir(extract),)
-      print "test/hi/test.mag: extract.functional: %s" % (extract.functional,)
+      print "test/hi/test mag: extractPath: %s" % (extractPath,)
+      print "test/hi/test mag: extract.success: %s" % (extract.success,)
+      print "test/hi/test mag: extract: %s" % (extract,)
+      print "test/hi/test mag: dir(extract): %s" % (dir(extract),)
+      print "test/hi/test mag: extract.functional: %s" % (extract.functional,)
     if not extract.success: continue
 
     if bugLev >= 1:
-      print 'test/hi/test.mag ========== A'
-      print "test/hi/test.mag: nonmag structure: %s" % (nonmagjob.structure,)
-      print 'test/hi/test.mag ========== B'
-      print "test/hi/test.mag: extract.structure: %s" % (extract.structure,)
-      print 'test/hi/test.mag ========== C'
-      print "test/hi/test.mag: extract.species: %s" % (extract.species,)
-      print 'test/hi/test.mag ========== D'
+      print 'test/hi/test mag ========== A'
+      print "test/hi/test mag: nonmag structure: %s" % (nonmagjob.structure,)
+      print 'test/hi/test mag ========== B'
+      print "test/hi/test mag: extract.structure: %s" % (extract.structure,)
+      print 'test/hi/test mag ========== C'
+      print "test/hi/test mag: extract.species: %s" % (extract.species,)
+      print 'test/hi/test mag ========== D'
 
     if not is_magnetic_system(extract.structure, extract.functional.species):
       continue
@@ -275,13 +279,13 @@ def magnetic_wave( path=None, inputpath='input.py', **kwargs):
     material = nonmagjob.material
     lattice = nonmagjob.lattice
     if bugLev >= 1:
-      print "test/hi/test.mag: material: %s" % (material,)
-      print "test/hi/test.mag: lattice: %s" % (lattice,)
+      print "test/hi/test mag: material: %s" % (material,)
+      print "test/hi/test mag: lattice: %s" % (lattice,)
 
     # figures out whether we have both high and low spins. 
     if bugLev >= 1:
-      print "test/hi/test.mag: extract structure: %s" % (extract.structure,)
-      print "test/hi/test.mag: extract species: %s" \
+      print "test/hi/test mag: extract structure: %s" % (extract.structure,)
+      print "test/hi/test mag: extract species: %s" \
         % (extract.functional.species,)
     if has_high_and_low(extract.structure, extract.functional.species):
           hnl = [(min, "ls-"), (max, "hs-")]
@@ -289,7 +293,8 @@ def magnetic_wave( path=None, inputpath='input.py', **kwargs):
     # now loops over moments.
     for func, prefix in hnl: 
       if bugLev >= 1:
-        print "test/hi/test.mag: func: %s  prefix: %s" % (func, prefix,)
+        print "test/hi/test mag: func: %s  prefix: %s" % (func, prefix,)
+        # Either func=min,prefix="ls-", or func=max,prefix="hs-"
       # Now tries and creates high-spin ferro folders
       # if it does not already exist.
       jobname = normpath("{0}/{1}ferro".format(basename, prefix))
@@ -297,18 +302,18 @@ def magnetic_wave( path=None, inputpath='input.py', **kwargs):
         extract.structure, extract.functional.species, func)
 
       if bugLev >= 1:
-        print "test/hi/test.mag: structure: %s" % (structure,)
-        print "test/hi/test.mag: jobfolder: %s" % (jobfolder,)
-        print "test/hi/test.mag: jobname: %s" % (jobname,)
-        print "test/hi/test.mag: magmom: %s" % (magmom,)
-        print "test/hi/test.mag: input.do_ferro: %s" % (input.do_ferro,)
+        print "test/hi/test mag: structure: %s" % (structure,)
+        print "test/hi/test mag: jobfolder: %s" % (jobfolder,)
+        print "test/hi/test mag: jobname: %s" % (jobname,)
+        print "test/hi/test mag: magmom: %s" % (magmom,)
+        print "test/hi/test mag: input.do_ferro: %s" % (input.do_ferro,)
       if magmom and jobname not in jobfolder and input.do_ferro:
         structure.name = "{0} in {1}, {2}ferro."\
                          .format(material, lattice.name, prefix)
         job = jobfolder / jobname
         if bugLev >= 1:
-          print "test/hi/test.mag: structure.name: %s" % (structure.name,)
-          print "test/hi/test.mag: job: %s" % (job,)
+          print "test/hi/test mag: structure.name: %s" % (structure.name,)
+          print "test/hi/test mag: job: %s" % (job,)
         job.functional = input.vasp
         job.params["structure"] = structure.copy()
         job.params["magmom"] = True
@@ -316,7 +321,7 @@ def magnetic_wave( path=None, inputpath='input.py', **kwargs):
         # saves some stuff for future reference.
         job.material = material
         job.lattice  = lattice
-        print "test/hi/test.mag: created ferro jobname: %s" % (jobname,)
+        print "test/hi/test mag: created ferro jobname: %s" % (jobname,)
         nb_new_folders += 1
 
       # Now tries and creates anti-ferro-lattices folders
@@ -337,7 +342,7 @@ def magnetic_wave( path=None, inputpath='input.py', **kwargs):
         # saves some stuff for future reference.
         job.material = material
         job.lattice  = lattice
-        print "test/hi/test.mag: created anti ferro jobname: %s" % (jobname,)
+        print "test/hi/test mag: created anti ferro jobname: %s" % (jobname,)
         nb_new_folders += 1
 
       # Random anti-ferro, or all possible anti-ferro.
@@ -356,23 +361,23 @@ def magnetic_wave( path=None, inputpath='input.py', **kwargs):
 
       # If the user asked for at least half the total num unique tests,
       # we may as well do them all
-      print "test.py: numMagAtom: %d  numUnique: %d  input.nbantiferro: %d" \
+      print "test/hi/test mag: numMagAtom: %d  numUnique: %d  input.nbantiferro: %d" \
         % ( numMagAtom, numUnique, input.nbantiferro,)
       if input.nbantiferro >= numUnique / 2:
         # Do all possible combinations
-        print 'test.py: Do all possible antiferro combinations'
+        print 'test/hi/test mag: Do all possible antiferro combinations'
         for itest in range( numUnique):
           jobname = runAntiFerroTest(
             bugLev, jobfolder, material, lattice,
             inputpath, input, magIxs,
             extract, basename, func, prefix, itest, itest)
-          print "test/hi/test.mag: created all anti ferro jobname: %s" \
+          print "test/hi/test mag: created all anti ferro jobname: %s" \
             % (jobname,)
           nb_new_folders += 1
 
       else:
         # Only run a few random combinations
-        print 'test.py: Do a random selection of antiferro combinations'
+        print 'test/hi/test mag: Do a random selection of antiferro combinations'
         doneMap = {}
         ix = 0
         while True:
@@ -383,7 +388,7 @@ def magnetic_wave( path=None, inputpath='input.py', **kwargs):
               bugLev, jobfolder, material, lattice,
               inputpath, input, magIxs,
               extract, basename, func, prefix, ix, itest)
-            print "test/hi/test.mag: created random anti ferro jobname: %s" \
+            print "test/hi/test mag: created random anti ferro jobname: %s" \
               % (jobname,)
             nb_new_folders += 1
             ix += 1
@@ -599,67 +604,71 @@ def calcGW( path=None, inputpath='inputGW.py', **kwargs):
     return
 
   input = read_input(inputpath)
+  print '  test/hi/test gw: inputpath: ', inputpath
+  print '  test/hi/test gw: input.vasp.relaxation: ', input.vasp.relaxation
 
   # will loop over all folders, looking for all successfull calculations. 
   nb_new_folders = 0
   for name, pjob in jobfolder.iteritems():
     if bugLev >= 1:
-      print "test/hi/test.gw: name: %s  pjob: %s" % (name, pjob,)
+      print "test/hi/test gw: name: %s  pjob: %s" % (name, pjob,)
     # avoid tagged folders.
     if pjob.is_tagged: continue
 
     basename = normpath("/" + name + "/../")
     if bugLev >= 1:
-      print "test/hi/test.gw: basename: %s" % (basename,)
+      print "test/hi/test gw: basename: %s" % (basename,)
 
     # check for success and avoid failures.
     extractPath = join(basedir, name)
     extract = pjob.functional.Extract( extractPath)
     if bugLev >= 1:
-      print "test/hi/test.gw: extractPath: %s" % (extractPath,)
-      print "test/hi/test.gw: extract.success: %s" % (extract.success,)
-      print "test/hi/test.gw: extract: %s" % (extract,)
-      print "test/hi/test.gw: dir(extract): %s" % (dir(extract),)
+      print "test/hi/test gw: extractPath: %s" % (extractPath,)
+      print "test/hi/test gw: extract.success: %s" % (extract.success,)
+      print "test/hi/test gw: extract: %s" % (extract,)
+      print "test/hi/test gw: dir(extract): %s" % (dir(extract),)
     if not extract.success: continue
 
     if bugLev >= 1:
-      print 'test/hi/test.gw ========== A'
-      print "test/hi/test.gw: nonmag structure: %s" % (pjob.structure,)
-      print 'test/hi/test.gw ========== B'
-      print "test/hi/test.gw: extract.structure: %s" % (extract.structure,)
-      print 'test/hi/test.gw ========== C'
-      print "test/hi/test.gw: extract.species: %s" % (extract.species,)
-      print "test/hi/test.gw: extract functional species: %s" \
+      print 'test/hi/test gw ========== A'
+      print "test/hi/test gw: nonmag structure: %s" % (pjob.structure,)
+      print 'test/hi/test gw ========== B'
+      print "test/hi/test gw: extract.structure: %s" % (extract.structure,)
+      print 'test/hi/test gw ========== C'
+      print "test/hi/test gw: extract.species: %s" % (extract.species,)
+      print "test/hi/test gw: extract functional species: %s" \
         % (extract.functional.species,)
-      print 'test/hi/test.gw ========== D'
-      print "test/hi/test.gw: dir(pjob): %s" % (dir(pjob),)
-      print 'test/hi/test.gw ========== E'
+      print 'test/hi/test gw ========== D'
+      print "test/hi/test gw: dir(pjob): %s" % (dir(pjob),)
+      print 'test/hi/test gw ========== E'
 
     # loads lattice and material from previous job.
     material = pjob.material
     lattice = pjob.lattice
     if bugLev >= 1:
-      print "test/hi/test.gw: material: %s" % (material,)
-      print "test/hi/test.gw: lattice: %s" % (lattice,)
+      print "test/hi/test gw: material: %s" % (material,)
+      print "test/hi/test gw: lattice: %s" % (lattice,)
 
-    jobname = pjob.name + '/gw'
+    jobname = pjob.name + '/gwcalc'
     structure = extract.structure.copy()
     structure.name = "{0} in {1}, GW.".format(material, lattice.name)
     if bugLev >= 1:
-      print "test/hi/test.gw: jobname: %s" % (jobname,)
-      print "test/hi/test.gw: structure.name: %s" % (structure.name,)
+      print "test/hi/test gw: jobname: %s" % (jobname,)
+      print "test/hi/test gw: structure.name: %s" % (structure.name,)
 
     job = jobfolder / jobname
     if bugLev >= 1:
-      print "test/hi/test.gw: job: %s" % (job,)
+      print "test/hi/test gw: job: %s" % (job,)
+
     job.functional = input.vasp
+
     job.params["structure"] = structure.copy()
     job.params["magmom"] = True
     job.params["ispin"] =  2
     # saves some stuff for future reference.
     job.material = material
     job.lattice  = lattice
-    print "test/hi/test.gw: created ferro jobname: %s" % (jobname,)
+    print "test/hi/test gw: created ferro jobname: %s" % (jobname,)
     nb_new_folders += 1
 
   # now saves new job folder

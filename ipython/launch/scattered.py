@@ -32,6 +32,8 @@ __docformat__ = "restructuredtext en"
 def launch(self, event, jobfolders):
   """ Launch scattered jobs: one job = one pbs script. """
   from copy import deepcopy
+  import os, re
+  import subprocess
   from os.path import join, dirname, exists, basename
   from os import remove
   from .. import get_shell
@@ -81,8 +83,13 @@ def launch(self, event, jobfolders):
     with Changedir(directory) as pwd: pass
     # loop over executable folders in current jobfolder
     for name, job in current.root.iteritems():
-      if bugLev >= 1: print "launch/scattered: current: %s  path: %s  name: %s  job: %s  tagged: %s" \
-        % (current, path, name, job, job.is_tagged,)
+      if bugLev >= 1:
+        print 'launch/scattered: current: %s' % (current,)
+        print 'launch/scattered: current.root: %s' % (current.root,)
+        print 'launch/scattered: name: %s' % (name,)
+        print 'launch/scattered: job: %s' % (job,)
+        print 'launch/scattered: job.is_tagged: %s' % (job.is_tagged,)
+
       # avoid jobfolder which are off
       if job.is_tagged: continue
       # avoid successful jobs.unless specifically requested
@@ -127,7 +134,14 @@ def launch(self, event, jobfolders):
           print '%s' % (string,)
           print "launch/scattered: ===== end pbsscripts[-1]: %s =====" \
             % (pbsscripts[-1],)
-        file.write(string)
+        lines = string.split('\n')
+        omitTag = '# omitted for testValidProgram: '
+        for line in lines:
+          if testValidProgram != None \
+            and (re.match('^ *module ', line) \
+              or re.match('^\. .*/bin/activate$', line)):
+            line = omitTag + line
+          file.write( line + '\n')
       assert exists(pbsscripts[-1])
 
       # exploremod
@@ -162,13 +176,18 @@ def launch(self, event, jobfolders):
       print "launch/scattered: launch: shell: %s" % (shell,)
       print "launch/scattered: launch: qsub_exe: %s" % (qsub_exe,)
       print "launch/scattered: launch: script: \"%s\"" % (script,)
- 
+
     if testValidProgram != None:
-      shell.system('python ' + pbsargs['scriptcommand'])
+      cmdLine = '/bin/bash ' + script
     else:
       # qsub pbsscript (template is in config/mpi.py: pbs_string),
       # which sets up modules and invokes: python {scriptcommand}
-      shell.system("{0} {1}".format(qsub_exe, script))
+      cmdLine = "{0} {1}".format(qsub_exe, script)
+
+    with open( script + '.stderr', 'w') as ferr:
+      with open( script + '.stdout', 'w') as fout:
+        subprocess.call( cmdLine, shell=True, stderr=ferr, stdout=fout)
+        # xxx: all subprocess: set stderr, stdout
 
 
 def completer(self, info, data):

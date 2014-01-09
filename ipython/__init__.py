@@ -161,6 +161,7 @@ def qdel(self, arg):
   
   result = qstat(self, arg)
   for u, name in zip(result.fields(0), result.fields(-1)): 
+    #xxx use subprocess
     self.shell.system('{0} {1}'.format(qdel_exe, u))
 
 def qstat(self, arg):

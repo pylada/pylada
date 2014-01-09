@@ -974,6 +974,7 @@ class IBrion(BaseKeyword):
     if self.value is None: return None
     return {self.keyword: str(self.value)}
 
+
 class Relaxation(BaseKeyword):
   """ Simple relaxation parameter 
 
@@ -993,9 +994,15 @@ class Relaxation(BaseKeyword):
   def __init__(self, value=None):
     super(Relaxation, self).__init__()
     self.value = value
+    if bugLev >= 5:
+      print 'keywords: Relaxation.init: value: %s' % (self.value,)
 
 
   def __get__(self, instance, owner=None): 
+    if bugLev >= 5:
+      print 'keywords: Relaxation.get: nsw: %s' % (instance.nsw,)
+      print 'keywords: Relaxation.get: ibrion: %s' % (instance.ibrion,)
+      print 'keywords: Relaxation.get: isif: %s' % (instance.isif,)
     nsw = instance.nsw if instance.nsw is not None else 0
     ibrion = instance.ibrion if instance.ibrion is not None                    \
              else (-1 if nsw <= 0 else 2)
@@ -1013,6 +1020,8 @@ class Relaxation(BaseKeyword):
 
   def __set__(self, instance, value):
     from ..error import ValueError
+    if bugLev >= 5:
+      print 'keywords: Relaxation.set A: value: %s' % (value,)
     if value is None: value = 'static'
     if hasattr(value, '__iter__'): value = ' '.join([str(u) for u in value])
     # try integer value
@@ -1023,23 +1032,32 @@ class Relaxation(BaseKeyword):
                 4: 'cellshape ionic', 5: 'cellshape', 6: 'cellshape volume',
                 7: 'volume' }[dummy]
     value = set(value.lower().replace(',', ' ').rstrip().lstrip().split())
+    if bugLev >= 5:
+      print 'keywords: Relaxation.set B: value: %s' % (value,)
     result = []
     if 'all' in value:
-      result = 'ionic cellshape volume'.split()
-      #gwmod: result = 'ionic cellshape volume gwcalc'.split()
+      #result = 'ionic cellshape volume'.split()
+      result = 'ionic cellshape volume gwcalc'.split() # gwmod
     else:
       if 'ion' in value or 'ions' in value or 'ionic' in value:
         result.append('ionic')
       if 'cell' in value or 'cellshape' in value or 'cell-shape' in value: 
         result.append('cellshape')
       if 'volume' in value: result.append('volume')
-      #gwmod: if 'gwcalc in value: result.append('gwcalc')
+      if 'gwcalc' in value: result.append('gwcalc')   # gwmod
+    if bugLev >= 5:
+      print 'keywords: Relaxation.set C: result: %s' % (result,)
 
     result = ', '.join(result)
+    if bugLev >= 5:
+      print 'keywords: Relaxation.set D: result: %s' % (result,)
+      print 'keywords: Relaxation.set D: ibrion: %s' % (instance.ibrion,)
+      print 'keywords: Relaxation.set D: isif: %s' % (instance.isif,)
+      print 'keywords: Relaxation.set D: nsw: %s' % (instance.nsw,)
 
     # static case
     if len(result) == 0:
-    # if len(result) == 0 or result == ['gwcalc']:
+    # gwmod?: if len(result) == 0 or result == ['gwcalc']:
       instance.nsw = 0
       if instance.ibrion is not None: instance.ibrion = -1
       if instance.isif is not None:
@@ -1052,8 +1070,11 @@ class Relaxation(BaseKeyword):
     ionic = 'ionic' in result
     cellshape = 'cellshape' in result
     volume = 'volume' in result
-    #gwmod: gwcalc = 'gwcalc' in result
+    gwcalc = 'gwcalc' in result     #gwmod
+    if bugLev >= 5:
+      print 'keywords: Relaxation.set E: ionic: %s  cellshape: %s  volume: %s  gwcalc: %s' % (ionic, cellshape, volume, gwcalc,)
 
+    instance.isif = 0    #gwmod
     if ionic and (not cellshape) and (not volume):   instance.isif = 2
     elif ionic and cellshape and (not volume):       instance.isif = 4
     elif ionic and cellshape and volume:             instance.isif = 3
@@ -1063,11 +1084,15 @@ class Relaxation(BaseKeyword):
     elif ionic and (not cellshape) and volume: 
       raise ValueError( "VASP does not allow relaxation of atomic position "   \
                         "and volume at constant cell-shape.\n" )
+    elif gwcalc:                                      instance.isif = 0
     else: instance.isif = 2
 
-    # gwmod: if 'gwcalc' in value: ...
+    # gwmod:
+    if 'gwcalc' in value and instance.isif != 0:
+      raise ValueError("cannot combine gw with other relaxation")
 
   def output_map(self, **kwargs): return None
+
 
 
 class ISmear(AliasKeyword):

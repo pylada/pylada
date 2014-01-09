@@ -297,10 +297,8 @@ echo config/mpi.py pbs_string: header: {header}
 echo config/mpi.py pbs_string: scriptcommand: python {scriptcommand}
 echo config/mpi.py pbs_string: footer: {footer}
 
+echo config/mpi.py pbs_string: directory: {directory}
 echo config/mpi.py pbs_string: which python A: $(which python)
-
-
-
 
 
 module load epel/6.3
@@ -310,9 +308,6 @@ module load python/2.7.4/impi-intel
 
 
 export PYTHONPATH=$PYTHONPATH:/nopt/nrel/ecom/cid/pylada/5.0.006/pinstall/lib64/python2.7/site-packages
-
-
-
 
 
 echo ''
@@ -359,8 +354,13 @@ echo config/mpi.py pbs_string: after test mpi4py
 python {scriptcommand}
 {footer}
 
+
 '''
 """ Default pbs/slurm script. """
+
+
+
+
 
 
 do_multiple_mpi_programs = True
