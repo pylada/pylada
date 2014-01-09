@@ -52,7 +52,6 @@ vasp.sigma      = 0.01
 vasp.encut      = 340.0
 vasp.nelm       = 1
 
-vasp.algo       = "gw"
 vasp.lwave      = True
 vasp.lmaxfockae = 4
 vasp.nomega     = 64
@@ -182,7 +181,7 @@ vasp.species["V" ].moment = [ 1.0, 4.0 ]
 vasp.first_trial = { "kpoints": "\n0\nAuto\n10", "encut": 0.9 }
 """ parameter to override during first relaxation step. """
 
-vasp.relaxation = "gwcalc"
+vasp.relaxation = "relgw"
 """ Degrees of freedom to relax. """
 
 vasp.maxiter = 5

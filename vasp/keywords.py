@@ -1019,9 +1019,52 @@ class Relaxation(BaseKeyword):
 
 
   def __set__(self, instance, value):
+    import sys, traceback
     from ..error import ValueError
     if bugLev >= 5:
       print 'keywords: Relaxation.set A: value: %s' % (value,)
+      # Shows: volume ionic cellshape
+      #print 'keywords: Relaxation.set: ===== start stack trace'
+      #traceback.print_stack( file=sys.stdout)
+      #print 'keywords: Relaxation.set: ===== end stack trace'
+
+      # Stack trace A, from ipython script, as part of tst.nonmagnetic_wave()
+      # File "test.py", line 58, in nonmagnetic_wave
+      #   input = read_input(inputpath)
+      # File "vasp/__init__.py", line 67, in read_input
+      #   return read_input(filepath, input_dict)
+      # File "misc/__init__.py", line 195, in read_input
+      #   return exec_input(string, global_dict, local_dict,
+      #     paths, basename(filename))
+      # File "misc/__init__.py", line 226, in exec_input
+      #   exec(script, global_dict, local_dict)
+      # File "<string>", line 160, in <module>
+      # File "tools/input/block.py", line 70, in __setattr__
+      #   if hasattr(result, '__set__'): result.__set__(self, value)
+      # File "keywords.py", line 1027, in __set__
+      #   traceback.print_stack( file=sys.stdout)
+
+      # Stack trace B, from pbsout:
+      # File "ipython/launch/scattered_script.py", line 113, in <module>
+      #   if __name__ == "__main__": main()
+      # File "ipython/launch/scattered_script.py", line 108, in main
+      #   jobfolder[name].compute(comm=comm, outdir=name)
+      # File "jobfolder/jobfolder.py", line 297, in compute
+      #   res = self.functional.__call__(**params)
+      # File "<string>", line 16, in __call__
+      # File "<string>", line 12, in iter
+      # File "vasp/relax.py", line 277, in iter_relax
+      #   **params
+      # File "tools/__init__.py", line 46, in wrapper
+      #   return function(self, structure, outdir, **kwargs)
+      # File "tools/__init__.py", line 65, in wrapper
+      #   if hasattr(self, key): setattr(self, key, kwargs.pop(key))
+      # File "tools/input/block.py", line 70, in __setattr__
+      #   if hasattr(result, '__set__'): result.__set__(self, value)
+      # File "vasp/keywords.py", line 1027, in __set__
+      #   traceback.print_stack( file=sys.stdout)
+
+
     if value is None: value = 'static'
     if hasattr(value, '__iter__'): value = ' '.join([str(u) for u in value])
     # try integer value
@@ -1034,6 +1077,7 @@ class Relaxation(BaseKeyword):
     value = set(value.lower().replace(',', ' ').rstrip().lstrip().split())
     if bugLev >= 5:
       print 'keywords: Relaxation.set B: value: %s' % (value,)
+      # Shows: set(['volume', 'cellshape', 'ionic'])
     result = []
     if 'all' in value:
       #result = 'ionic cellshape volume'.split()
@@ -1047,13 +1091,18 @@ class Relaxation(BaseKeyword):
       if 'gwcalc' in value: result.append('gwcalc')   # gwmod
     if bugLev >= 5:
       print 'keywords: Relaxation.set C: result: %s' % (result,)
+      # Shows: ['ionic', 'cellshape', 'volume']
 
     result = ', '.join(result)
     if bugLev >= 5:
       print 'keywords: Relaxation.set D: result: %s' % (result,)
+      # Shows: ionic, cellshape, volume
       print 'keywords: Relaxation.set D: ibrion: %s' % (instance.ibrion,)
       print 'keywords: Relaxation.set D: isif: %s' % (instance.isif,)
       print 'keywords: Relaxation.set D: nsw: %s' % (instance.nsw,)
+      # Shows: ibrion: None or 2
+      # Shows: isif: None or 3
+      # Shows: nsw: None or 50
 
     # static case
     if len(result) == 0:
@@ -1073,6 +1122,7 @@ class Relaxation(BaseKeyword):
     gwcalc = 'gwcalc' in result     #gwmod
     if bugLev >= 5:
       print 'keywords: Relaxation.set E: ionic: %s  cellshape: %s  volume: %s  gwcalc: %s' % (ionic, cellshape, volume, gwcalc,)
+      # Shows: ionic: True  cellshape: True  volume: True  gwcalc: False
 
     instance.isif = 0    #gwmod
     if ionic and (not cellshape) and (not volume):   instance.isif = 2

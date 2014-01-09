@@ -253,7 +253,9 @@ def iter_relax( vasp, structure, outdir=None, first_trial=None,
       % (relaxation, type(relaxation),)
   # cellshape ionic volume
 
-  # performs relaxation calculations.
+
+
+  # performs cellshape relaxation calculations.
   if bugLev >= 5:
     print "vasp/relax: iter_relax: beg cellshape.  nb_steps: %d  maxcalls: %d" \
       % (nb_steps, maxcalls,)
@@ -301,6 +303,8 @@ def iter_relax( vasp, structure, outdir=None, first_trial=None,
   # Does not perform ionic calculation if convergence not reached.
   if nofail == False and is_converged(output) == False: 
     raise ExternalRunFailed("Could not converge cell-shape in {0} iterations.".format(maxcalls))
+
+
 
   # performs ionic calculation. 
   if bugLev >= 5:
@@ -366,11 +370,10 @@ def iter_relax( vasp, structure, outdir=None, first_trial=None,
     print 'vasp/relax: iter_relax: before gwcalc.  maxcalls: %d' % (maxcalls,)
     print 'vasp/relax: iter_relax: before gwcalc.  relaxation: %s' \
       % (relaxation,)
-    print 'vasp/relax: iter_relax: before gwcalc.  vasp.alg: %s' % (vasp.alg,)
     #xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
   if (maxcalls <= 0 or nb_steps < maxcalls + 2) \
-    and relaxation.find("gwcalc") != -1:
+    and relaxation.find("relgw") != -1:
 
     if bugLev >= 5:
       print "vasp/relax: iter_relax: relax gwcalc start"
@@ -379,7 +382,7 @@ def iter_relax( vasp, structure, outdir=None, first_trial=None,
       (\
         relaxed_structure, 
         outdir = fulldir,
-        relaxation = "gwcalc",
+        relaxation = "relgw",
         restart = output,
         **params
       ):
@@ -422,7 +425,9 @@ def iter_relax( vasp, structure, outdir=None, first_trial=None,
     raise ExternalRunFailed("Could not converge ions in {0} iterations.".format(maxcalls))
 
   # performs final calculation outside relaxation directory. 
-  # gwmod: if relaxation.find("gwcalc") == -1 ...  # skip if gwmod
+
+  # xxx skip if gwmod:
+  # gwmod: if relaxation.find("relgw") == -1 ...
 
   for u in vasp.iter\
     (\
