@@ -184,10 +184,17 @@ def launch(self, event, jobfolders):
       # which sets up modules and invokes: python {scriptcommand}
       cmdLine = "{0} {1}".format(qsub_exe, script)
 
-    with open( script + '.stderr', 'w') as ferr:
-      with open( script + '.stdout', 'w') as fout:
+    nmerr = script + '.stderr'
+    nmout = script + '.stdout'
+    with open( nmerr, 'w') as ferr:
+      with open( nmout, 'w') as fout:
         subprocess.call( cmdLine, shell=True, stderr=ferr, stdout=fout)
         # xxx: all subprocess: set stderr, stdout
+    if os.path.getsize( nmerr) != 0:
+      with open( nmerr) as fin:
+        print 'launch/scattered: stderr: %s' % (fin.read(),)
+    with open( nmout) as fin:
+      print 'launch/scattered: stdout: %s' % (fin.read(),)
 
 
 def completer(self, info, data):

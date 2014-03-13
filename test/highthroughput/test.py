@@ -473,12 +473,14 @@ def species_antiferro(structure, species, func=min):
   from numpy import math, abs
   # checks whether lattice-sites are magnetic or not.
   result = structure.copy()
+  # signs = map: atomSym -> 1 if not mag, -1 if mag
   signs = {}
   for atom in result:
     m = func(deduce_moment(atom, species))
     signs[atom.type] = 1 if abs(m) < 1e-12 else -1
   if len([u[1] for u in signs.items() if u[1] == -1]) < 2: return None, False
   # makes alternating sign list.
+  # All atoms of a given specie get the same sign.
   dummy = 1
   for k in sorted(signs.keys()):
     if signs[k] != -1: continue

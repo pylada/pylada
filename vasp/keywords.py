@@ -845,7 +845,9 @@ class LDAU(BoolKeyword):
     ###from .. import vasp_has_nlep
     vasp = kwargs['vasp']
     has_nlep = getattr( vasp, 'has_nlep', False)
-    print '############################## LDAU: has_nlep: %s' % (has_nlep,)
+    if bugLev >= 5:
+      print 'vasp/keywords: ldau.output_map:'
+      print '    has_nlep: %s' % (has_nlep,)
 
     #print "vasp/keywords: LDAU.output: keyword: %s  value: %s" \
     #  % (self.keyword, self.value,)
@@ -856,6 +858,17 @@ class LDAU(BoolKeyword):
     has_U, which_type = False, None 
     for type in types:
       specie = species[type]
+      if bugLev >= 5:
+        print '        type: %s  specie: %s  U: %s  len: %d' \
+          % (type, specie, specie.U, len(specie.U),)
+        # Shows, for Cu2 Al2 O4:
+        #   type: Cu
+        #   specie: Specie('/nopt/nrel/ecom/cid/vasp.pseudopotentials.a/
+        #     pseudos/Cu', oxidation=1, U=[{'type': 2, 'J': 0.0, 'U': 5.0,
+        #     'l': 2, 'func': 'U'}], moment=[1.0, 4.0])
+        #   U: [{'type': 2, 'J': 0.0, 'U': 5.0, 'l': 2, 'func': 'U'}]
+        #   len: 1
+        #   ... similarly for Al, O
       if len(specie.U) == 0: continue
       if len(specie.U) > 4: 
         raise ValueError("More than 4 channels for U/NLEP parameters")
@@ -868,6 +881,9 @@ class LDAU(BoolKeyword):
           raise ConfigError('has_nlep is False. Cannot use NLEP.')
       # checks consistency.
       which_type = specie.U[0]["type"]
+      if bugLev >= 5:
+        print '        which_type: %s' % (which_type,)
+        # Shows: which_type: 2
       for l in specie.U[1:]: 
         if which_type != l["type"]:
           raise ValueError("LDA+U/NLEP types are not consistent across species.")
@@ -877,13 +893,22 @@ class LDAU(BoolKeyword):
     result = super(LDAU, self).output_map(**kwargs)
     result['LDAU'] = '.TRUE.'
     result['LDAUTYPE'] = str(which_type)
+    if bugLev >= 5:
+      print '        initial result: %s' % (result,)
+      # Shows: initial result: {'LDAU': '.TRUE.', 'LDAUTYPE': '2'}
 
     # U and NLEP themselves.
     if has_nlep: 
+      if bugLev >= 5: print '  has_nlep is True'
       for i in range( max(len(species[type].U) for type in types) ):
         ldul, lduu, lduj, lduo = [], [], [], []
         for type in types:
           specie = species[type]
+          # a = 4 tuple, for func=='U':
+          #   ldul component = U['l'], default = -1
+          #   lduu component = U['U'], default = 0
+          #   lduj component = U['J'], default = 0
+          #   lduo component = 1
           a = -1, 0e0, 0e0, 1
           if len(specie.U) <= i: pass
           elif specie.U[i]["func"] == "U":    
@@ -899,11 +924,60 @@ class LDAU(BoolKeyword):
           lduu.append('{0[1]:18.10e}'.format(a))
           lduj.append('{0[2]:18.10e}'.format(a))
           lduo.append('{0[3]}'.format(a))
+          if bugLev >= 5:
+            print '      i: %d  type: %s  specie: %s  U: %s' \
+              % (i, type, specie, specie.U,)
+            print '          a: %s' % (a,)
+            print '          ldul: %s' % (ldul,)
+            print '          lduu: %s' % (lduu,)
+            print '          lduj: %s' % (lduj,)
+            print '          lduo: %s' % (lduo,)
+            # Shows, for Cu2 Al2 O4 (reformatted):
+            #   i: 0  type: Cu
+            #   specie: Specie('.../pseudos/Cu', oxidation=1, U=[{'type': 2, 'J': 0.0, 'U': 5.0, 'l': 2, 'func': 'U'}], moment=[1.0, 4.0])
+            #   U: [{'type': 2, 'J': 0.0, 'U': 5.0, 'l': 2, 'func': 'U'}]
+            #   a: [2, 5.0, 0.0, 1]
+            #   ldul: ['2']
+            #   lduu: ['  5.0']
+            #   lduj: ['  0.0']
+            #   lduo: ['1']
+            #
+            #   i: 0  type: Al
+            #   specie: Specie('.../pseudos/Al', oxidation=3)
+            #   U: []
+            #   a: (-1, 0.0, 0.0, 1)
+            #   ldul: ['2', '-1']
+            #   lduu: ['  5.0', '  0.0']
+            #   lduj: ['  0.0', '  0.0']
+            #   lduo: ['1', '1']
+            #
+            #   i: 0  type: O
+            #   specie: Specie('.../pseudos/O', oxidation=-2)
+            #   U: []
+            #   a: (-1, 0.0, 0.0, 1)
+            # Parallel arrays:
+            #          Cu      Al      O
+            #   ldul: ['2',    '-1',   '-1']    # from specie.U['l']
+            #   lduu: ['5.0',  '0.0',  '0.0']   # from specie.U['U']
+            #   lduj: ['0.0',  '0.0',  '0.0']   # from specie.U['j']
+            #   lduo: ['1',    '1',    '1']     # ==func=='U'
+
         result['LDUL{0}'.format(i+1)] = ' '.join(ldul)
         result['LDUU{0}'.format(i+1)] = ' '.join(lduu)
         result['LDUJ{0}'.format(i+1)] = ' '.join(lduj)
         result['LDUO{0}'.format(i+1)] = ' '.join(lduo)
+        if bugLev >= 5:
+          print '  has_nlep result: %s' % (result,)
+          # Shows:
+          #   has_nlep result: {
+          #     'LDUO1': '1 1 1',
+          #     'LDUU1': '  5.0  0.0   0.0',
+          #     'LDUJ1': '  0.0  0.0   0.0',
+          #     'LDUL1': '2 -1 -1',
+          #     'LDAUTYPE': '2',
+          #     'LDAU': '.TRUE.'}
     else: 
+      if bugLev >= 5: print '  Not has_nlep'
       ldul, lduu, lduj = [], [], []
       for type in types:
         specie = species[type]
@@ -916,9 +990,18 @@ class LDAU(BoolKeyword):
         ldul.append('{0[0]}'.format(a))
         lduu.append('{0[1]:18.10e}'.format(a))
         lduj.append('{0[2]:18.10e}'.format(a))
+        if bugLev >= 5:
+          print '        type: %s  specie: %s  U: %s' \
+            % (type, specie, specie.U,)
+          print '          ldul: %s' % (ldul,)
+          print '          lduu: %s' % (lduu,)
+          print '          lduj: %s' % (lduj,)
+          print '          lduo: %s' % (lduo,)
       result['LDUL'] = ' '.join(ldul)
       result['LDUU'] = ' '.join(lduu)
       result['LDUJ'] = ' '.join(lduj)
+      if bugLev >= 5:
+        print '  Not has_nlep final result: %s' % (result,)
     return result
 
 class PrecFock(AliasKeyword):

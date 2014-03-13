@@ -537,18 +537,23 @@ class UParams(SpecialVaspParam):
 
   def incar_string(self, **kwargs):
     from ...crystal import specieset
+    if bugLev >= 5: print 'vasp/incar/_params: UParams.incar_string:'
     types = specieset(kwargs['structure'])
     species = kwargs['vasp'].species
     # existence and sanity check
     has_U, which_type = False, None 
     for type in types:
       specie = species[type]
+      if bugLev >= 5:
+        print '    check: type: %s  specie: %s  specie.U: %s  len: %s' \
+          % (type, specie, specie.U, len(specie.U),)
       if len(specie.U) == 0: continue
       if len(specie.U) > 4: 
         raise AssertionError, "More than 4 channels for U/NLEP parameters"
       has_U = True
       # checks consistency.
       which_type = specie.U[0]["type"]
+      if bugLev >= 5: print '    check: which_type: %s' % (which_type,)
       for l in specie.U[1:]: 
         assert which_type == l["type"], \
                AssertionError("LDA+U/NLEP types are not consistent across species.")
@@ -556,27 +561,47 @@ class UParams(SpecialVaspParam):
 
     # Prints LDA + U parameters
     result = "LDAU = .TRUE.\nLDAUPRINT = {0}\nLDAUTYPE = {1}\n".format(self.value, which_type)
+    if bugLev >= 5:
+      print '    self.value: %s' % (self.value,)
+      print '    which_type: %s' % (which_type,)
+      print '    result: %s' % (result,)
 
     for i in range( max(len(species[type].U) for type in types) ):
       line = "LDUL{0}=".format(i+1), "LDUU{0}=".format(i+1), "LDUJ{0}=".format(i+1), "LDUO{0}=".format(i+1)
+      if bugLev >= 5: print '      i: %s  line: %s' % (i, line,)
       for type in types:
         specie = species[type]
         a = -1, 0e0, 0e0, 1
+        if bugLev >= 5:
+          print '        type: %s  specie: %s  len: %d' \
+            % (type, specie, len(specie.U),)
         if len(specie.U) <= i: pass
-        elif specie.U[i]["func"] == "U":    
-          a = [specie.U[i]["l"], specie.U[i]["U"], specie.U[i]["J"], 1]
-        elif specie.U[i]["func"] == "nlep": 
-          a = [specie.U[i]["l"], specie.U[i]["U0"], 0e0, 2]
-        elif specie.U[i]["func"] == "enlep":
-          a = [specie.U[i]["l"], specie.U[i]["U0"], specie.U[i]["U1"], 3]
-        else: raise RuntimeError, "Debug Error."
+        else:
+          if bugLev >= 5:
+            print '          func: %s' % (specie.U[i]["func"],)
+            print '          l: %s' % (specie.U[i]["l"],)
+            print '          U: %s' % (specie.U[i]["U"],)
+            print '          J: %s' % (specie.U[i]["J"],)
+            print '          U0: %s' % (specie.U[i]["U0"],)
+            print '          U1: %s' % (specie.U[i]["U1"],)
+          if specie.U[i]["func"] == "U":    
+            a = [specie.U[i]["l"], specie.U[i]["U"], specie.U[i]["J"], 1]
+          elif specie.U[i]["func"] == "nlep": 
+            a = [specie.U[i]["l"], specie.U[i]["U0"], 0e0, 2]
+          elif specie.U[i]["func"] == "enlep":
+            a = [specie.U[i]["l"], specie.U[i]["U0"], specie.U[i]["U1"], 3]
+          else: raise RuntimeError, "Debug Error."
+        if bugLev >= 5: print '        a: %s' % (a,)
         if hasattr(a[1], "rescale"): a[1] = a[1].rescale("eV")
         if hasattr(a[2], "rescale"): a[2] = a[2].rescale("eV")
         line = "{0[0]} {1[0]}".        format(line, a),\
                "{0[1]} {1[1]:18.10e}". format(line, a),\
                "{0[2]} {1[2]:18.10e}".format(line, a),\
                "{0[3]} {1[3]}".        format(line, a)
+        if bugLev >= 5: print '        line: %s' % (line,)
       result += "\n{0}\n{1}\n{2}\n{3}\n".format(*line)
+      if bugLev >= 5: print '      result: %s' % (result,)
+    if bugLev >= 5: print '    final result: %s' % (result,)
     return result
   def __repr__(self):
     return "{0.__class__.__name__}({1!r})".format(self, ["off", "on", "all"][self.value])

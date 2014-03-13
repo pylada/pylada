@@ -27,7 +27,9 @@
 __docformat__  = 'restructuredtext en'
 __all__ = ['LockFile', 'open_exclusive']
 from contextlib import contextmanager
-  
+
+useLocking = False
+
 class LockFile(object):
   """ Gets an advisory lock for file C{filename}.
 
@@ -64,26 +66,32 @@ class LockFile(object):
     from os.path import exists
     import time
 
-    # creates parent directory first, if necessary.
-    if not exists(self._parent_directory):
-      try: makedirs(self._parent_directory) 
-      except error: pass
-    start_time = time.time()
-    # loops until acqires lock.
-    while self._owns_lock == False: 
-      # tries to create director.
-      try:
-        self._owns_lock = True
-        mkdir(self.lock_directory)
-      # if fails, then another process already created it. Just keep looping.
-      except error: 
-        self._owns_lock = False
-        # 2013-11-11: disable timeout to make it try forever,
-        # since timeouts are causing large runs to fail.
-        #if self.timeout is not None:
-        #  if time.time() - start_time > self.timeout:
-        #    raise RuntimeError("Could not acquire lock on file {0}.".format(self.filename))
-        time.sleep(self.sleep)
+    # 2014-03-07: disable all locking since one running job
+    # that dies holding the lock impacts all following jobs,
+    # and apparently jobs only read the pickle file, never write it.
+    if useLocking:
+
+      # creates parent directory first, if necessary.
+      if not exists(self._parent_directory):
+        try: makedirs(self._parent_directory) 
+        except error: pass
+      start_time = time.time()
+      # loops until acqires lock.
+      while self._owns_lock == False: 
+        # tries to create director.
+        try:
+          self._owns_lock = True
+          mkdir(self.lock_directory)
+        # if fails, then another process already created it. Just keep looping.
+        except error: 
+          self._owns_lock = False
+          # 2013-11-11: disable timeout to make it try forever,
+          # since timeouts are causing large runs to fail.
+          #if self.timeout is not None:
+          #  if time.time() - start_time > self.timeout:
+          #    raise RuntimeError("Could not acquire lock on file {0}.".format(self.filename))
+          time.sleep(self.sleep)
+
 
   def __del__(self):
     """ Deletes hold on object. """
@@ -127,10 +135,13 @@ class LockFile(object):
         Makes sure things are syncro. The latter is an internal bug though.
     """
     from os import rmdir
-    assert self._owns_lock, IOError("Filelock object does not own lock.")
-    assert self.is_locked, IOError("Filelock object owns an unlocked lock.")
-    self._owns_lock = False
-    rmdir(self.lock_directory)
+
+    if useLocking:      # see notes in lock()
+
+      assert self._owns_lock, IOError("Filelock object does not own lock.")
+      assert self.is_locked, IOError("Filelock object owns an unlocked lock.")
+      self._owns_lock = False
+      rmdir(self.lock_directory)
 
   def __del__(self):
     """ Releases lock if still held. """

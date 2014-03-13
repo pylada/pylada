@@ -36,7 +36,7 @@
 #   and is retrieved by getVaspMap, which calls mkVaspMap.
 
 
-import datetime, os, re, shlex, sys, traceback
+import datetime, itertools, os, re, shlex, sys, traceback
 import numpy as np
 
 
@@ -923,7 +923,12 @@ class CifReader:
 
     # Get list of unique symbols: ['Mo', 'S']
     syms = [ww[0] for ww in wyckoffs]
-    uniqueSyms = list( set( syms))               # unique values
+
+    symGroups = itertools.groupby( syms)
+    pairs = [(x, len(list(grp))) for x, grp in symGroups]
+    uniqueSyms = [pair[0] for pair in pairs]    # unique symbols == species
+    uniqueNums = [pair[1] for pair in pairs]    # count of each usym
+
     if self.buglev >= 2: print 'mkVaspMap: uniqueSyms: %s' % (uniqueSyms,)
     timeb = datetime.datetime.now()
     if self.buglev >= 2: print 'mkVaspMap: %20s time: %10.5f' \

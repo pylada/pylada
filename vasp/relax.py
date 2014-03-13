@@ -181,14 +181,23 @@ def iter_relax( vasp, structure, outdir=None, first_trial=None,
   from ..error import ExternalRunFailed
 
   if bugLev >= 5:
-    print "vasp/relax: iter_relax: entry.  vasp: %s" % (vasp,)
-    print 'vasp/relax: iter_relax: entry.  maxcalls: %d' % (maxcalls,)
+    print "vasp/relax: iter_relax: entry.  type(vasp): %s" % (type(vasp),)
+      # Shows type: pylada.tools.SuperCall
+    print 'vasp/relax: iter_relax: entry. === start vasp:\n%s' % (vasp,)
+    print '===== end vasp'
+    print 'vasp/relax: iter_relax: entry. structure:\n%s' % (structure,)
+    print 'vasp/relax: iter_relax: type(structure): %s' % (type(structure),)
+    print 'vasp/relax: iter_relax: entry.  outdir: %s' % (outdir,)
+    print 'vasp/relax: iter_relax: entry.  first_trial: %s' % (first_trial,)
+    print 'vasp/relax: iter_relax: entry.  maxcalls: %s' % (maxcalls,)
+    print 'vasp/relax: iter_relax: entry.  keepsteps: %s' % (keepsteps,)
+    print 'vasp/relax: iter_relax: entry.  nofail: %s' % (nofail,)
+    print 'vasp/relax: iter_relax: entry.  convergence: %s' % (convergence,)
+    print 'vasp/relax: iter_relax: entry.  minrelsteps: %s' % (minrelsteps,)
+    print 'vasp/relax: iter_relax: entry.  kwargs: %s' % (kwargs,)
+
     for item in vasp.__dict__.items():
       print '  vasp/relax: iter_relax: entry.  vasp item: %s' % (item,)
-
-    # Shows type: pylada.tools.SuperCall
-    print "vasp/relax: iter_relax: type(vasp): %s" % (type(vasp),)
-
     # Shows __dict__ containing
     #   key: '_class',  value = <class 'pylada.vasp.relax.Relax'>
     #   key: '_object', value = generated source code from inputCif.py, like:
@@ -202,10 +211,6 @@ def iter_relax( vasp, structure, outdir=None, first_trial=None,
     #     relax.ibrion         = 2
     #     ...
     #     relax.species        = {'Ni': Specie(...), ...}
-    print "vasp/relax: iter_relax: vasp.__dict__: %s" % (vasp.__dict__,)
-    print "vasp/relax: iter_relax: initial outdir: %s" % (outdir,)
-    print "vasp/relax: iter_relax: structure:\n%s" % (structure,)
-    print "vasp/relax: iter_relax: type(structure): %s" % (type(structure),)
 
   # make this function stateless.
   vasp = deepcopy(vasp)
@@ -238,19 +243,18 @@ def iter_relax( vasp, structure, outdir=None, first_trial=None,
   # defaults to vasp.relaxation
   relaxation = kwargs.pop('relaxation', vasp.relaxation)
   if bugLev >= 5:
-    # Shows: cellshape ionic volume
     print "vasp/relax: iter_relax: relaxation a: %s  type: %s\n" \
       % (relaxation, type(relaxation),)
-  # cellshape ionic volume
+    # Shows string: cellshape ionic volume
   # could be that relaxation comes from vasp.relaxation which is a tuple.
   if isinstance(relaxation, tuple):
     vasp = deepcopy(vasp)
     vasp.relaxation = relaxation
     relaxation = relaxation[0]
   if bugLev >= 5:
-    # Shows: cellshape ionic volume, type: str
     print "vasp/relax: iter_relax: relaxation b: %s  type: %s\n" \
       % (relaxation, type(relaxation),)
+    # Shows: cellshape ionic volume, type: str
   # cellshape ionic volume
 
 
@@ -262,7 +266,8 @@ def iter_relax( vasp, structure, outdir=None, first_trial=None,
   while (maxcalls <= 0 or nb_steps < maxcalls) and relaxation.find("cellshape") != -1:
     if bugLev >= 5:
       # Once per output dir like .../relax_cellshape/0, 1, 2, ...
-      print "vasp/relax: iter_relax: relax cellshape loop head"
+      print 'vasp/relax: iter_relax: relax cellshape loop head'
+      print '    params: %s' % (params,)
 
     # Invokes vasp/functional.Vasp.__init__
     # and vasp/functional: iter, which calls bringup,
@@ -292,7 +297,8 @@ def iter_relax( vasp, structure, outdir=None, first_trial=None,
     
     nb_steps += 1
     if bugLev >= 5:
-      print "vasp/relax: iter_relax: relax cellshape nb_steps: %s" % (nb_steps,)
+      print 'vasp/relax: iter_relax cellshape nb_steps: %s' % (nb_steps,)
+      print '    first_trial: %s' % (first_trial,)
     if nb_steps == 1 and len(first_trial) != 0: params = kwargs; continue
     # check for convergence.
     isConv = is_converged(output)
