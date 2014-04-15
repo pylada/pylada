@@ -260,9 +260,9 @@ def create_global_comm(nprocs, dir=None):
 
     stdout, stderr = process.communicate()
     if bugLev >= 5:
+      print "process.mpi: *** end process.communicate ***"
       print "process.mpi: === start stdout ===\n%s\n=== end ===" % (stdout,)
       print "process.mpi: === start stderr ===\n%s\n=== end ===" % (stderr,)
-      print "process.mpi: *** start process.communicate ***"
   finally:
     if exists(filename):
       try: remove(filename)

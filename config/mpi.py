@@ -20,7 +20,24 @@
 #  <http://www.gnu.org/licenses/>.
 ###############################
 
-mpirun_exe = "mpirun -n {n} {placement} {program}"
+import socket
+
+#  peregrine gives: login4.hpc.nrel.gov
+#  stampede gives:  login2.stampede.tacc.utexas.edu
+hostFqdn = socket.getfqdn()    # fully qualified domain name
+
+if hostFqdn.endswith('hpc.nrel.gov'):       # if peregrine
+  mpirun_exe = "mpirun -n {n} {placement} {program}"
+elif hostFqdn.endswith('stampede.tacc.utexas.edu'):       # if stampede
+  mpirun_exe = "ibrun {program}"
+  # or: mpirun_exe = "ibrun -n {n} -o 0 {placement} {program}"
+else:
+  raise Exception('config/mpi.py: error - unknown hostFqdn: %s' \
+    % (hostFqdn,))
+
+
+
+
 """ Command-line to launch external mpi programs. """
 def machine_dependent_call_modifier(formatter=None, comm=None, env=None):
   """ Machine dependent modifications. 
@@ -231,24 +248,6 @@ debug_queue = "queue", "debug"
 """
 
 
-qsub_exe = "qsub"
-""" Qsub/sbatch executable. """
-qsub_array_exe = None
-""" Qsub for job arrays.
-
-    If not None, if should be a tuple consisting of the command to launch job
-    arrays and the name of the environment variable holding the job index. 
-
-    >>> qsub_array_exe = 'qsub -J 1-{nbjobs}', '$PBS_ARRAY_INDEX'
-
-    The format ``{array}`` will receive the arrays to launch.
-"""
-
-
-# qdel_exe = 'scancel'
-qdel_exe = 'mjobctl -c'
-""" Qdel/scancel executable. """
-
 default_pbs = {
   ###'account': accounts[0],
   'walltime': "00:30:00",
@@ -257,29 +256,28 @@ default_pbs = {
   'header': '',
   'footer': ''
 }
-""" Defaults parameters filling the pbs script. """
 
-#pbs_string =  '''#!/bin/bash
-##SBATCH --account={account}
-##SBATCH --time={walltime}
-##SBATCH -N {nnodes}
-##SBATCH -e {err}
-##SBATCH -o {out}
-##SBATCH -J {name}
-##SBATCH -D {directory}
-#
-#echo config/mpi.py pbs_string: header: {header}
-#echo config/mpi.py pbs_string: scriptcommand: python {scriptcommand}
-#echo config/mpi.py pbs_string: footer: {footer}
-#
-#{header}
-#python {scriptcommand}
-#{footer}
-#
-#'''
+qsub_array_exe = None
+
+if hostFqdn.endswith('hpc.nrel.gov'):       # if peregrine
+  qsub_exe = "qsub"
+  """ Qsub/sbatch executable. """
+
+  """ Qsub for job arrays.
+
+      If not None, if should be a tuple consisting of the command to launch job
+      arrays and the name of the environment variable holding the job index. 
+
+      >>> qsub_array_exe = 'qsub -J 1-{nbjobs}', '$PBS_ARRAY_INDEX'
+
+      The format ``{array}`` will receive the arrays to launch.
+  """
 
 
-pbs_string =  '''#!/bin/bash
+  # qdel_exe = 'scancel'
+  qdel_exe = 'mjobctl -c'
+
+  pbs_string =  '''#!/bin/bash
 #PBS -A {account}
 #PBS -q {queue}
 #PBS -m n
@@ -300,15 +298,12 @@ echo config/mpi.py pbs_string: footer: {footer}
 echo config/mpi.py pbs_string: directory: {directory}
 echo config/mpi.py pbs_string: which python A: $(which python)
 
-
 module load epel/6.3
 module load python/2.7.4/impi-intel
 
 . /nopt/nrel/ecom/cid/pylada/5.0.006/virtipy/bin/activate
 
-
 export PYTHONPATH=$PYTHONPATH:/nopt/nrel/ecom/cid/pylada/5.0.006/pinstall/lib64/python2.7/site-packages
-
 
 echo ''
 echo config/mpi.py pbs_string: which python B: $(which python)
@@ -349,15 +344,57 @@ echo config/mpi.py pbs_string: after test quantities
 python -c 'import mpi4py'
 echo config/mpi.py pbs_string: after test mpi4py
 
+{header}
+python {scriptcommand}
+{footer}
+
+'''
+
+# end if hostFqdn.endswith('hpc.nrel.gov')
+
+
+
+
+
+
+elif hostFqdn.endswith('stampede.tacc.utexas.edu'):       # if stampede
+  qsub_exe = "sbatch"
+  """ Qsub/sbatch executable. """
+
+  pbs_string =  '''#!/bin/bash
+#SBATCH --account={account}
+#SBATCH --time={walltime}
+#SBATCH -p {queue}
+#SBATCH -n {n}
+#SBATCH -N {nnodes}
+#SBATCH -e {err}
+#SBATCH -o {out}
+#SBATCH -J {name}
+#SBATCH -D {directory}
+
+module load python/2.7.3-epd-7.3.2
+module load boost/1.51.0
+module load cmake/2.8.9
+
+. /work/02730/ssulliva/public/pkgs/virtipy/bin/activate
+
+export PYTHONPATH=/opt/apps/python/epd/7.3.2/modules/lib/python:/opt/apps/python/epd/7.3.2/lib:/work/02730/ssulliva/public/pinstall/lib64/python2.7/site-packages/:/work/02730/ssulliva/public/nrelmat:/work/02730/ssulliva/public/schedMain/
+
+echo config/mpi.py pbs_string: header: {header}
+echo config/mpi.py pbs_string: scriptcommand: python {scriptcommand}
+echo config/mpi.py pbs_string: footer: {footer}
 
 {header}
 python {scriptcommand}
 {footer}
 
-
 '''
-""" Default pbs/slurm script. """
 
+# end if hostFqdn.endswith('stampede.tacc.utexas.edu')
+
+else:
+  raise Exception('config/mpi.py: error - unknown hostFqdn: %s' \
+    % (hostFqdn,))
 
 
 
