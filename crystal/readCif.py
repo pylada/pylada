@@ -121,7 +121,7 @@ def main():
 
 
   if inFile != None:
-    cifRdr = CifReader( buglev, typeMap, inFile)
+    cifRdr = CifReader( buglev, inFile)
     icsdMap = cifRdr.getIcsdMap()
     vaspMap = cifRdr.getVaspMap()
 
