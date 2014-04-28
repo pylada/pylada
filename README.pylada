@@ -1,0 +1,57 @@
+How to run PyLada
+
+*** Zeroth:
+
+# Set up this modules.  This is sure to change soon,
+# as the candidate modules move into production.
+
+module purge
+module use /nopt/nrel/apps/modules/candidate/modulefiles
+module load comp-intel/13.1.1
+module load impi-intel/4.1.1-13.1.3
+module load epel/6.3
+module load python/2.7.6
+
+*** First:
+
+# Create the file ~/.ipython/profile_default/ipython_config.py
+# with two lines:
+
+c = get_config()
+c.InteractiveShellApp.extensions = [ "pylada.ipython" ]
+
+
+*** Second:
+
+# Set up the test version of pylada
+. /nopt/nrel/ecom/cid/pylada/5.0.006/virtipy/bin/activate
+export PYTHONPATH=$PYTHONPATH:/nopt/nrel/ecom/cid/pylada/5.0.006/pinstall/lib64/python2.7/site-packages
+
+
+*** Third:
+
+# Check python:
+python   # should say Python 2.7.6
+
+# Check ipython:
+ipython   # should say IPython 2.0.0
+
+
+
+
+*** Fourth:
+
+# Run Pylada.
+
+mkdir testlada
+cd testlada
+cp /nopt/nrel/ecom/cid/pylada/dist/pylada.5.0.006/test/highthroughput/{inputCif.py,test.py} .
+
+cp cifs/icsd_060845.cif  structs  #  Cu2 Al2 O4 (mid 68523)
+
+ipython
+import test
+test.nonmagnetic_wave('pickle', inputpath='inputCif.py')
+launch scattered --ppn 24 --account x --queue batch --walltime=1:00:00
+
+

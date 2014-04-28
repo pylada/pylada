@@ -298,8 +298,12 @@ echo config/mpi.py pbs_string: footer: {footer}
 echo config/mpi.py pbs_string: directory: {directory}
 echo config/mpi.py pbs_string: which python A: $(which python)
 
+module purge
+module use /nopt/nrel/apps/modules/candidate/modulefiles
+module load comp-intel/13.1.1
+module load impi-intel/4.1.1-13.1.3
 module load epel/6.3
-module load python/2.7.4/impi-intel
+module load python/2.7.6
 
 . /nopt/nrel/ecom/cid/pylada/5.0.006/virtipy/bin/activate
 
