@@ -1,3 +1,5 @@
+Please use https://github.com/pylada/pylada-light rather than pylada. Yeah naming is awkward.
+
 pylada
 ======
 
